@@ -56,7 +56,13 @@ def create_args():
         "--msg", type=str, required=True, help="Path to file containing message"
     )
     parser.add_argument(
-        "--prompt", type=str, required=True, help="Prompt used to generate text"
+        "--prompt", type=str, default=None, help="Prompt used to generate text"
+    )
+    parser.add_argument(
+        "--text",
+        type=str,
+        default=None,
+        help="Text contains the hidden message",
     )
     # Mode
     parser.add_argument(
@@ -66,6 +72,12 @@ def create_args():
     parser.add_argument(
         "--decrypt",
         action="store_true",
+    )
+    parser.add_argument(
+        "--save-file",
+        type=str,
+        default="",
+        help="Where to save output",
     )
 
     return parser.parse_args()
@@ -88,6 +100,8 @@ def main(args):
         private_key = None
 
     if args.encrypt:
+        if len(args.prompt) == 0:
+            raise ValueError("Prompt cannot be empty in encrypt mode")
         if os.path.isfile(args.msg):
             with open(args.msg, "rb") as f:
                 msg = f.read()
@@ -118,11 +132,31 @@ def main(args):
             salt_key=salt_key,
             private_key=private_key,
         )
-        args.text = text
-
         print(f"Text contains message:\n{text}")
 
+        if os.path.isfile(args.save_file):
+            with open(args.save_file, "w") as f:
+                f.write(text)
+
+        args.text = text
+
     if args.decrypt:
+        if len(args.text) == 0:
+            raise ValueError("Text cannot be empty in decrypt mode")
+        if os.path.isfile(args.text):
+            with open(args.text, "r") as f:
+                lines = f.readlines()
+                args.text = "".join(lines)
+        print("=" * os.get_terminal_size().columns)
+        print("Encryption Parameters:")
+        print(f"  GenModel: {args.gen_model}")
+        print(f"  Text: {args.text}")
+        print(f"  Message Base: {args.msg_base}")
+        print(f"  Seed Scheme: {args.seed_scheme}")
+        print(f"  Window Length: {args.window_length}")
+        print(f"  Salt Key: {salt_key}")
+        print(f"  Private Key: {private_key}")
+        print("=" * os.get_terminal_size().columns)
         msgs = decrypt(
             tokenizer=tokenizer,
             device=args.device,
