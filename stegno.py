@@ -17,6 +17,8 @@ def generate(
     window_length: int = 1,
     salt_key: Union[int, None] = None,
     private_key: Union[int, None] = None,
+    max_new_tokens_ratio: float = 2,
+    num_beams: int = 4,
 ):
     """
     Generate the sequence containing the hidden data.
@@ -51,15 +53,19 @@ def generate(
         **tokenized_input,
         logits_processor=transformers.LogitsProcessorList([logits_processor]),
         min_new_tokens=logits_processor.get_message_len(),
-        max_new_tokens=logits_processor.get_message_len() * 2,
+        max_new_tokens=int(
+            logits_processor.get_message_len() * max_new_tokens_ratio
+        ),
         do_sample=True,
-        num_beams=4,
+        num_beams=num_beams
     )
     output_text = tokenizer.batch_decode(
         output_tokens, skip_special_tokens=True
     )[0]
+    output_tokens_post = tokenizer(output_text, return_tensors="pt")
+    msg_rates = logits_processor.validate(output_tokens_post.input_ids)
 
-    return output_text
+    return output_text, msg_rates[0]
 
 
 def decrypt(
@@ -100,4 +106,3 @@ def decrypt(
     msg = decryptor.decrypt(tokenized_input.input_ids)
 
     return msg
-

@@ -107,6 +107,7 @@ class EncryptorLogitsProcessor(LogitsProcessor, BaseProcessor):
         self.start_pos = []
         for i in range(prompt_ids.size(0)):
             self.start_pos.append(prompt_ids[i].size(0))
+        self.raw_msg = msg
         self.msg = bytes_to_base(msg, self.msg_base)
         self.gamma = gamma
 
@@ -138,6 +139,22 @@ class EncryptorLogitsProcessor(LogitsProcessor, BaseProcessor):
 
     def get_message_len(self):
         return len(self.msg)
+
+    def validate(self, input_ids_batch: torch.Tensor):
+        res = []
+        for input_ids in input_ids_batch:
+            values = []
+            for i in range(self.start_pos[0], input_ids.size(0)):
+                values.append(self._get_value(input_ids[: i + 1]))
+            enc_msg = base_to_bytes(values, self.msg_base)
+            cnt = 0
+            for i in range(len(self.raw_msg)):
+                if self.raw_msg[i] == enc_msg[i]:
+                    cnt += 1
+            res.append(cnt / len(self.raw_msg))
+        
+
+        return res
 
 
 class DecryptorProcessor(BaseProcessor):
