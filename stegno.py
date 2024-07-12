@@ -11,6 +11,7 @@ def generate(
     model,
     prompt: str,
     msg: bytes,
+    start_pos_p: list[int],
     gamma: float,
     msg_base: int,
     seed_scheme: str,
@@ -36,10 +37,20 @@ def generate(
         private_key: private key used to compute the seed.
 
     """
+    if len(start_pos_p) == 1:
+        start_pos = start_pos_p[0]
+    else:
+        start_pos = torch.randint(
+            start_pos_p[0], start_pos_p[1] + 1, (1,)
+        ).item()
+    start_pos = int(start_pos) + window_length
+
     tokenized_input = tokenizer(prompt, return_tensors="pt").to(model.device)
+    prompt_size = tokenized_input.input_ids.size(1)
     logits_processor = EncryptorLogitsProcessor(
         prompt_ids=tokenized_input.input_ids,
         msg=msg,
+        start_pos=start_pos,
         gamma=gamma,
         msg_base=msg_base,
         vocab=list(tokenizer.get_vocab().values()),
@@ -49,20 +60,26 @@ def generate(
         salt_key=salt_key,
         private_key=private_key,
     )
+    min_length = start_pos + logits_processor.get_message_len()
+    max_length = int(
+        start_pos + logits_processor.get_message_len() * max_new_tokens_ratio
+    )
     output_tokens = model.generate(
         **tokenized_input,
         logits_processor=transformers.LogitsProcessorList([logits_processor]),
-        min_new_tokens=logits_processor.get_message_len(),
-        max_new_tokens=int(
-            logits_processor.get_message_len() * max_new_tokens_ratio
-        ),
+        min_new_tokens=min_length,
+        max_new_tokens=max_length,
         do_sample=True,
         num_beams=num_beams
     )
+
+    output_tokens = output_tokens[:, prompt_size:]
     output_text = tokenizer.batch_decode(
         output_tokens, skip_special_tokens=True
     )[0]
-    output_tokens_post = tokenizer(output_text, return_tensors="pt")
+    output_tokens_post = tokenizer(output_text, return_tensors="pt").to(
+        model.device
+    )
     msg_rates = logits_processor.validate(output_tokens_post.input_ids)
 
     return output_text, msg_rates[0]

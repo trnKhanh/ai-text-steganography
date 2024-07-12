@@ -4,7 +4,7 @@ from typing import Union
 import torch
 from transformers import LogitsProcessor
 
-from seed_schemes import seed_scheme_factory
+from seed_scheme_factory import SeedSchemeFactory
 from utils import bytes_to_base, base_to_bytes, get_values_per_byte
 
 
@@ -36,15 +36,20 @@ class BaseProcessor(object):
         self.device = device
 
         # Seed parameters
-        self.seed_fn = seed_scheme_factory.get(
+        seed_fn = SeedSchemeFactory.get_instance(
             seed_scheme,
             salt_key=salt_key,
             private_key=private_key,
         )
+        if seed_fn is None:
+            raise ValueError(f'Seed scheme "{seed_scheme}" is invalid')
+        else:
+            self.seed_fn = seed_fn
+
         self.window_length = window_length
 
-        # Initialize RNG
-        self.rng = torch.Generator(device=device)
+        # Initialize RNG, always use cpu generator
+        self.rng = torch.Generator(device="cpu")
 
         # Compute the ranges of each value in base
         self.ranges = torch.zeros((self.msg_base + 1), dtype=torch.int64)
@@ -69,7 +74,9 @@ class BaseProcessor(object):
         Get ids of tokens in the valid list for the current sequences.
         """
         self._seed_rng(input_ids)
-        vocab_perm = torch.randperm(self.vocab_size, generator=self.rng)
+        vocab_perm = torch.randperm(
+            self.vocab_size, generator=self.rng, device="cpu"
+        ).to(self.device)
         vocab_list = vocab_perm[self.ranges[value] : self.ranges[value + 1]]
 
         return vocab_list
@@ -79,7 +86,9 @@ class BaseProcessor(object):
         Check whether the token is in the valid list.
         """
         self._seed_rng(input_ids[:-1])
-        vocab_perm = torch.randperm(self.vocab_size, generator=self.rng)
+        vocab_perm = torch.randperm(
+            self.vocab_size, generator=self.rng, device="cpu"
+        ).to(self.device)
 
         cur_token = input_ids[-1]
         cur_id = (vocab_perm == cur_token).nonzero(as_tuple=True)[0]
@@ -94,8 +103,9 @@ class EncryptorLogitsProcessor(LogitsProcessor, BaseProcessor):
         prompt_ids: torch.Tensor,
         msg: bytes,
         gamma: float,
+        start_pos: int = 0,
         *args,
-        **kwargs
+        **kwargs,
     ):
         """
         Args:
@@ -103,10 +113,14 @@ class EncryptorLogitsProcessor(LogitsProcessor, BaseProcessor):
             gamma: bias add to scores of token in valid list.
         """
         super().__init__(*args, **kwargs)
+        if prompt_ids.size(0) != 1:
+            raise RuntimeError(
+                "EncryptorLogitsProcessor does not support multiple prompts input."
+            )
 
-        self.start_pos = []
-        for i in range(prompt_ids.size(0)):
-            self.start_pos.append(prompt_ids[i].size(0))
+        self.prompt_size = prompt_ids.size(1)
+        self.start_pos = start_pos
+
         self.raw_msg = msg
         self.msg = bytes_to_base(msg, self.msg_base)
         self.gamma = gamma
@@ -118,8 +132,8 @@ class EncryptorLogitsProcessor(LogitsProcessor, BaseProcessor):
 
         for i, input_ids in enumerate(input_ids_batch):
             cur_pos = input_ids.size(0)
-            msg_ptr = cur_pos - self.start_pos[0]
-            if msg_ptr >= len(self.msg):
+            msg_ptr = cur_pos - (self.prompt_size + self.start_pos)
+            if msg_ptr < 0 or msg_ptr >= len(self.msg):
                 continue
             scores_batch[i] = self._add_bias_to_valid_list(
                 input_ids, scores_batch[i], self.msg[msg_ptr]
@@ -144,7 +158,7 @@ class EncryptorLogitsProcessor(LogitsProcessor, BaseProcessor):
         res = []
         for input_ids in input_ids_batch:
             values = []
-            for i in range(self.start_pos[0], input_ids.size(0)):
+            for i in range(self.start_pos, input_ids.size(0)):
                 values.append(self._get_value(input_ids[: i + 1]))
             enc_msg = base_to_bytes(values, self.msg_base)
             cnt = 0
@@ -152,7 +166,6 @@ class EncryptorLogitsProcessor(LogitsProcessor, BaseProcessor):
                 if self.raw_msg[i] == enc_msg[i]:
                     cnt += 1
             res.append(cnt / len(self.raw_msg))
-        
 
         return res
 
@@ -166,12 +179,12 @@ class DecryptorProcessor(BaseProcessor):
         Decrypt the text sequences.
         """
         shift_msg = []
-        for s in range(get_values_per_byte(self.msg_base)):
+        for shift in range(get_values_per_byte(self.msg_base)):
             msg = []
             bytes_msg = []
             for i, input_ids in enumerate(input_ids_batch):
                 msg.append(list())
-                for j in range(self.window_length + s, len(input_ids)):
+                for j in range(self.window_length + shift, len(input_ids)):
                     # TODO: this could be slow. Considering reimplement this.
                     value = self._get_value(input_ids[: j + 1])
                     msg[i].append(value)

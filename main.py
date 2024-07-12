@@ -84,6 +84,14 @@ def create_args():
         default=None,
         help="Text or path to text containing the hidden message",
     )
+    # Encryption params
+    parser.add_argument(
+        "--start-pos",
+        type=int,
+        nargs="+",
+        default=[0],
+        help="Start position to input the text (not including window length). If 2 integers are provided, choose the position randomly between the two values.",
+    )
     # Mode
     parser.add_argument(
         "--encrypt",
@@ -166,6 +174,7 @@ def main(args):
             model=model,
             prompt=args.prompt,
             msg=args.msg,
+            start_pos_p=args.start_pos,
             gamma=args.gamma,
             msg_base=args.msg_base,
             seed_scheme=args.seed_scheme,
@@ -179,7 +188,7 @@ def main(args):
         print("-" * (os.get_terminal_size().columns))
         print(text)
         print("-" * (os.get_terminal_size().columns))
-        print(f"Successfully hide {msg_rate*100:.2f} of the message")
+        print(f"Successfully hide {msg_rate*100:.2f}% of the message")
         print("-" * (os.get_terminal_size().columns))
 
         if len(args.save_file) > 0:
