@@ -101,4 +101,4 @@ if __name__ == "__main__":
         ],
     )
     app = gr.TabbedInterface([enc, dec], ["Encrytion", "Decryption"])
-    app.launch()
+    app.launch(share=True)
