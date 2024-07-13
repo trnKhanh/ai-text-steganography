@@ -52,7 +52,7 @@ class BaseProcessor(object):
         self.rng = torch.Generator(device="cpu")
 
         # Compute the ranges of each value in base
-        self.ranges = torch.zeros((self.msg_base + 1), dtype=torch.int64)
+        self.ranges = torch.zeros((self.msg_base + 1), dtype=torch.int64).to(self.device)
         chunk_size = self.vocab_size / self.msg_base
         r = self.vocab_size % self.msg_base
         self.ranges[1:] = chunk_size
