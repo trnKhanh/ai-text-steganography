@@ -7,6 +7,10 @@ class SeedSchemeFactory:
     registry = {}
 
     @classmethod
+    def get_schemes_name(cls) -> list[str]:
+        return list(cls.registry.keys())
+
+    @classmethod
     def register(cls, name: str):
         """
         Register the hash scheme by name. Hash scheme must be callable.
@@ -37,8 +41,9 @@ class SeedSchemeFactory:
             return None
 
 
-class SeedScheme():
+class SeedScheme:
     def __call__(self, input_ids: torch.Tensor) -> int:
         return 0
+
 
 from seed_schemes import *
