@@ -9,6 +9,6 @@
 # TODO lists
 - [x] Baseline code.
 - [x] CLI.
-- [ ] Hashing schemes.
+- [x] Hashing schemes.
 - [ ] Rest API.
-- [ ] Basic Demo
+- [x] Basic Demo
