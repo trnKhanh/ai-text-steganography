@@ -79,13 +79,13 @@ def generate(
     )
 
     output_tokens = output_tokens[:, prompt_size:]
-    output_text = tokenizer.batch_decode(
-        output_tokens, skip_special_tokens=True
-    )[0]
-    output_tokens_post = tokenizer(output_text, return_tensors="pt").to(
+    output_text = tokenizer.batch_decode(output_tokens, skip_special_tokens=True)[0]
+    output_tokens_post = tokenizer(output_text, return_tensors="pt", add_special_tokens=False).to(
         model.device
     )
-    msg_rates, tokens_infos = logits_processor.validate(output_tokens_post.input_ids)
+    msg_rates, tokens_infos = logits_processor.validate(
+        output_tokens_post.input_ids
+    )
 
     return output_text, msg_rates[0], tokens_infos[0]
 
