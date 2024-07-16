@@ -70,3 +70,10 @@ class ModelFactory:
     @classmethod
     def get_models_names(cls):
         return list(cls.models_names.keys())
+
+    @classmethod
+    def get_model_max_length(cls, name: str):
+        if name in cls.tokenizers:
+            return cls.tokenizers[name].model_max_length
+        else:
+            return 0

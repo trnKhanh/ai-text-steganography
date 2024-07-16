@@ -171,7 +171,7 @@ def main(args):
         print(f"  Max New Tokens Ratio: {args.max_new_tokens_ratio}")
         print(f"  Number of Beams: {args.num_beams}")
         print("=" * os.get_terminal_size().columns)
-        text, msg_rate = generate(
+        text, msg_rate, tokens_info = generate(
             tokenizer=tokenizer,
             model=model,
             prompt=args.prompt,

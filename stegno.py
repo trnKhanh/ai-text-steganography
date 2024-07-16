@@ -20,6 +20,7 @@ def generate(
     private_key: Union[int, None] = None,
     max_new_tokens_ratio: float = 2,
     num_beams: int = 4,
+    repetition_penalty: float = 1.0,
 ):
     """
     Generate the sequence containing the hidden data.
@@ -61,17 +62,20 @@ def generate(
         salt_key=salt_key,
         private_key=private_key,
     )
-    min_length = start_pos + logits_processor.get_message_len()
-    max_length = int(
+    min_length = prompt_size + start_pos + logits_processor.get_message_len()
+    max_length = prompt_size + int(
         start_pos + logits_processor.get_message_len() * max_new_tokens_ratio
     )
+    max_length = min(max_length, tokenizer.model_max_length)
+    min_length = min(min_length, max_length)
     output_tokens = model.generate(
         **tokenized_input,
         logits_processor=transformers.LogitsProcessorList([logits_processor]),
-        min_new_tokens=min_length,
-        max_new_tokens=max_length,
+        min_length=min_length,
+        max_length=max_length,
         do_sample=True,
-        num_beams=num_beams
+        num_beams=num_beams,
+        repetition_penalty=float(repetition_penalty),
     )
 
     output_tokens = output_tokens[:, prompt_size:]
@@ -81,9 +85,9 @@ def generate(
     output_tokens_post = tokenizer(output_text, return_tensors="pt").to(
         model.device
     )
-    msg_rates = logits_processor.validate(output_tokens_post.input_ids)
+    msg_rates, tokens_infos = logits_processor.validate(output_tokens_post.input_ids)
 
-    return output_text, msg_rates[0]
+    return output_text, msg_rates[0], tokens_infos[0]
 
 
 def decrypt(

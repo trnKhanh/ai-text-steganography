@@ -20,6 +20,7 @@ class EncryptionBody(BaseModel):
         "encrypt.default", "max_new_tokens_ratio"
     )
     num_beams: int = GlobalConfig.get("encrypt.default", "num_beams")
+    repetition_penalty: float = GlobalConfig.get('encrypt.default', "repetition_penalty")
 
 class DecryptionBody(BaseModel):
     text: str

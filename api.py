@@ -19,7 +19,7 @@ async def encrypt_api(
     body: EncryptionBody,
 ):
     model, tokenizer = ModelFactory.load_model(body.gen_model)
-    text, msg_rate = generate(
+    text, msg_rate, tokens_info = generate(
         tokenizer=tokenizer,
         model=model,
         prompt=body.prompt,
@@ -32,8 +32,9 @@ async def encrypt_api(
         private_key=body.private_key,
         max_new_tokens_ratio=body.max_new_tokens_ratio,
         num_beams=body.num_beams,
+        repetition_penalty=body.repetition_penalty,
     )
-    return {"text": text, "msg_rate": msg_rate}
+    return {"text": text, "msg_rate": msg_rate, "tokens_info": tokens_info}
 
 
 @app.post("/decrypt")
@@ -78,6 +79,9 @@ async def default_config():
                     "encrypt.default", "max_new_tokens_ratio"
                 ),
                 "num_beams": GlobalConfig.get("encrypt.default", "num_beams"),
+                "repetition_penalty": GlobalConfig.get(
+                    "encrypt.default", "repetition_penalty"
+                ),
             },
             "decrypt": {
                 "gen_model": GlobalConfig.get("encrypt.default", "gen_model"),
@@ -101,9 +105,14 @@ async def default_config():
 
 
 if __name__ == "__main__":
+    # The following are mainly used to satisfy the linter
+    host = GlobalConfig.get("server", "host")
+    host = str(host) if host is not None else "0.0.0.0"
+
     port = GlobalConfig.get("server", "port")
-    if port is None:
-        port = 8000
-    else:
-        port = int(port)
-    uvicorn.run("api:app", host="0.0.0.0", port=port, workers=4)
+    port = int(port) if port is not None else 8000
+
+    workers = GlobalConfig.get("server", "workers")
+    workers = int(workers) if workers is not None else 1
+
+    uvicorn.run("api:app", host=host, port=port, workers=workers)

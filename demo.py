@@ -19,9 +19,10 @@ def enc_fn(
     private_key: int,
     max_new_tokens_ratio: float,
     num_beams: int,
+    repetition_penalty: float,
 ):
     model, tokenizer = ModelFactory.load_model(gen_model)
-    text, msg_rate = generate(
+    text, msg_rate, tokens_info = generate(
         tokenizer=tokenizer,
         model=model,
         prompt=prompt,
@@ -34,8 +35,32 @@ def enc_fn(
         private_key=private_key,
         max_new_tokens_ratio=max_new_tokens_ratio,
         num_beams=num_beams,
+        repetition_penalty=repetition_penalty,
     )
-    return text, msg_rate
+    highlight_base = []
+    for token in tokens_info:
+        stat = None
+        if token["base_msg"] != -1:
+            if token["base_msg"] == token["base_enc"]:
+                stat = "correct"
+            else:
+                stat = "wrong"
+        highlight_base.append((repr(token["token"])[1:-1], stat))
+
+    highlight_byte = []
+    for i, token in enumerate(tokens_info):
+        if i == 0 or tokens_info[i - 1]["byte_id"] != token["byte_id"]:
+            stat = None
+            if token["byte_msg"] != -1:
+                if token["byte_msg"] == token["byte_enc"]:
+                    stat = "correct"
+                else:
+                    stat = "wrong"
+            highlight_byte.append([repr(token["token"])[1:-1], stat])
+        else:
+            highlight_byte[-1][0] += repr(token["token"])[1:-1]
+
+    return text, highlight_base, highlight_byte, round(msg_rate * 100, 2)
 
 
 def dec_fn(
@@ -89,12 +114,25 @@ if __name__ == "__main__":
                 )
             ),
             gr.Number(int(GlobalConfig.get("encrypt.default", "num_beams"))),
+            gr.Number(float(GlobalConfig.get("encrypt.default", "repetition_penalty"))),
         ],
         outputs=[
             gr.Textbox(
                 label="Text containing message",
                 show_label=True,
                 show_copy_button=True,
+            ),
+            gr.HighlightedText(
+                label="Text containing message (Base highlighted)",
+                combine_adjacent=False,
+                show_legend=True,
+                color_map={"correct": "green", "wrong": "red"},
+            ),
+            gr.HighlightedText(
+                label="Text containing message (Byte highlighted)",
+                combine_adjacent=False,
+                show_legend=True,
+                color_map={"correct": "green", "wrong": "red"},
             ),
             gr.Number(label="Percentage of message in text", show_label=True),
         ],

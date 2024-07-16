@@ -127,6 +127,7 @@ class EncryptorLogitsProcessor(LogitsProcessor, BaseProcessor):
         self.raw_msg = msg
         self.msg = bytes_to_base(msg, self.msg_base)
         self.gamma = gamma
+        self.tokenizer = tokenizer
         special_tokens = [
             tokenizer.bos_token_id,
             tokenizer.eos_token_id,
@@ -169,20 +170,69 @@ class EncryptorLogitsProcessor(LogitsProcessor, BaseProcessor):
     def get_message_len(self):
         return len(self.msg)
 
+    def __map_input_ids(self, input_ids: torch.Tensor, base_arr, byte_arr):
+        byte_enc_msg = [-1 for _ in range(input_ids.size(0))]
+        base_enc_msg = [-1 for _ in range(input_ids.size(0))]
+        base_msg = [-1 for _ in range(input_ids.size(0))]
+        byte_msg = [-1 for _ in range(input_ids.size(0))]
+
+        values_per_byte = get_values_per_byte(self.msg_base)
+        start = self.start_pos % values_per_byte
+
+        for i, b in enumerate(base_arr):
+            base_enc_msg[i] = base_arr[i]
+            byte_enc_msg[i] = byte_arr[(i - start) // values_per_byte]
+
+        for i, b in enumerate(self.msg):
+            base_msg[i + self.start_pos] = b
+            byte_msg[i + self.start_pos] = self.raw_msg[i // values_per_byte]
+
+        return base_msg, byte_msg, base_enc_msg, byte_enc_msg
+
     def validate(self, input_ids_batch: torch.Tensor):
         res = []
+        tokens_infos = []
         for input_ids in input_ids_batch:
-            values = []
-            for i in range(self.start_pos, input_ids.size(0)):
-                values.append(self._get_value(input_ids[: i + 1]))
-            enc_msg = base_to_bytes(values, self.msg_base)
+            # Initialization
+            base_arr = []
+
+            # Loop and obtain values of all tokens
+            for i in range(0, input_ids.size(0)):
+                base_arr.append(self._get_value(input_ids[: i + 1]))
+
+            values_per_byte = get_values_per_byte(self.msg_base)
+
+            # Transform the values to bytes
+            start = self.start_pos % values_per_byte
+            byte_arr = base_to_bytes(base_arr[start:], self.msg_base)
+
+            # Construct the
             cnt = 0
-            for i in range(len(self.raw_msg)):
+            enc_msg = byte_arr[self.start_pos // values_per_byte :]
+            for i in range(min(len(enc_msg), len(self.raw_msg))):
                 if self.raw_msg[i] == enc_msg[i]:
                     cnt += 1
             res.append(cnt / len(self.raw_msg))
 
-        return res
+            base_msg, byte_msg, base_enc_msg, byte_enc_msg = (
+                self.__map_input_ids(input_ids, base_arr, byte_arr)
+            )
+            tokens = []
+            input_strs = [self.tokenizer.decode([input]) for input in input_ids]
+            for i in range(len(base_enc_msg)):
+                tokens.append(
+                    {
+                        "token": input_strs[i],
+                        "base_enc": base_enc_msg[i],
+                        "byte_enc": byte_enc_msg[i],
+                        "base_msg": base_msg[i],
+                        "byte_msg": byte_msg[i],
+                        "byte_id": (i - start) // values_per_byte,
+                    }
+                )
+            tokens_infos.append(tokens)
+
+        return res, tokens_infos
 
 
 class DecryptorProcessor(BaseProcessor):
@@ -199,7 +249,7 @@ class DecryptorProcessor(BaseProcessor):
             bytes_msg = []
             for i, input_ids in enumerate(input_ids_batch):
                 msg.append(list())
-                for j in range(self.window_length + shift, len(input_ids)):
+                for j in range(shift, len(input_ids)):
                     # TODO: this could be slow. Considering reimplement this.
                     value = self._get_value(input_ids[: j + 1])
                     msg[i].append(value)
