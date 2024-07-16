@@ -136,6 +136,7 @@ if __name__ == "__main__":
             ),
             gr.Number(label="Percentage of message in text", show_label=True),
         ],
+        concurrency_limit=5,
     )
     dec = gr.Interface(
         fn=dec_fn,
@@ -160,4 +161,4 @@ if __name__ == "__main__":
         ],
     )
     app = gr.TabbedInterface([enc, dec], ["Encrytion", "Decryption"])
-    app.launch(share=True)
+    app.launch(share=True, max_threads=5)
