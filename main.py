@@ -6,6 +6,8 @@ import torch
 
 from stegno import generate, decrypt
 from utils import load_model
+from global_config import GlobalConfig
+from model_factory import ModelFactory
 
 
 def create_args():
@@ -15,7 +17,7 @@ def create_args():
     parser.add_argument(
         "--gen-model",
         type=str,
-        default="openai-community/gpt2",
+        default=GlobalConfig.get("encrypt.default", "gen_model"),
         help="Generative model (LLM) used to generate text",
     )
     parser.add_argument(
@@ -25,25 +27,25 @@ def create_args():
     parser.add_argument(
         "--gamma",
         type=float,
-        default=2.0,
+        default=GlobalConfig.get("encrypt.default", "gamma"),
         help="Bias added to scores of tokens in valid list",
     )
     parser.add_argument(
         "--msg-base",
         type=int,
-        default=2,
+        default=GlobalConfig.get("encrypt.default", "msg_base"),
         help="Base of message",
     )
     parser.add_argument(
         "--seed-scheme",
         type=str,
-        required=True,
+        default=GlobalConfig.get("encrypt.default", "seed_scheme"),
         help="Scheme used to compute the seed",
     )
     parser.add_argument(
         "--window-length",
         type=int,
-        default=1,
+        default=GlobalConfig.get("encrypt.default", "window_length"),
         help="Length of window to compute the seed",
     )
     parser.add_argument(
@@ -56,13 +58,13 @@ def create_args():
     parser.add_argument(
         "--num-beams",
         type=int,
-        default=4,
+        default=GlobalConfig.get("encrypt.default", "num_beams"),
         help="Number of beams used in beam search",
     )
     parser.add_argument(
         "--max-new-tokens-ratio",
         type=float,
-        default=2,
+        default=GlobalConfig.get("encrypt.default", "max_new_tokens_ratio"),
         help="Ratio of max new tokens to minimum tokens required to hide message",
     )
     # Input
@@ -89,7 +91,7 @@ def create_args():
         "--start-pos",
         type=int,
         nargs="+",
-        default=[0],
+        default=[GlobalConfig.get("encrypt.default", "start_pos")],
         help="Start position to input the text (not including window length). If 2 integers are provided, choose the position randomly between the two values.",
     )
     # Mode

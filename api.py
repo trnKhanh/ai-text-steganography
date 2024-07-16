@@ -1,66 +1,109 @@
+import base64
+
 import torch
 from fastapi import FastAPI
+import uvicorn
 
 from stegno import generate, decrypt
 from utils import load_model
+from seed_scheme_factory import SeedSchemeFactory
+from model_factory import ModelFactory
+from global_config import GlobalConfig
+from schemes import DecryptionBody, EncryptionBody
 
 app = FastAPI()
 
 
-@app.get("/encrypt")
-async def encrypt(
-    prompt: str,
-    msg: str,
-    gen_model: str = "openai-community/gpt2",
-    device: str = "cpu",
-    start_pos: int = 0,
-    gamma: float = 2.0,
-    msg_base: int = 2,
-    seed_scheme: str = "dummy_hash",
-    window_length: int = 1,
-    private_key: int = 0,
-    max_new_tokens_ratio: float = 2,
-    num_beams: int = 4,
+@app.post("/encrypt")
+async def encrypt_api(
+    body: EncryptionBody,
 ):
-    model, tokenizer = load_model(gen_model, torch.device(device))
+    model, tokenizer = ModelFactory.load_model(body.gen_model)
     text, msg_rate = generate(
         tokenizer=tokenizer,
         model=model,
-        prompt=prompt,
-        msg=str.encode(msg),
-        start_pos_p=[start_pos],
-        gamma=gamma,
-        msg_base=msg_base,
-        seed_scheme=seed_scheme,
-        window_length=window_length,
-        private_key=private_key,
-        max_new_tokens_ratio=max_new_tokens_ratio,
-        num_beams=num_beams,
+        prompt=body.prompt,
+        msg=str.encode(body.msg),
+        start_pos_p=[body.start_pos],
+        gamma=body.gamma,
+        msg_base=body.msg_base,
+        seed_scheme=body.seed_scheme,
+        window_length=body.window_length,
+        private_key=body.private_key,
+        max_new_tokens_ratio=body.max_new_tokens_ratio,
+        num_beams=body.num_beams,
     )
     return {"text": text, "msg_rate": msg_rate}
 
 
-@app.get("/decrypt")
-async def dec(
-    text: str,
-    gen_model: str = "openai-community/gpt2",
-    device: str = "cpu",
-    msg_base: int = 2,
-    seed_scheme: str = "dummy_hash",
-    window_length: int = 1,
-    private_key: int = 0,
-):
-    model, tokenizer = load_model(gen_model, torch.device(device))
+@app.post("/decrypt")
+async def decrypt_api(body: DecryptionBody):
+    model, tokenizer = ModelFactory.load_model(body.gen_model)
     msgs = decrypt(
         tokenizer=tokenizer,
         device=model.device,
-        text=text,
-        msg_base=msg_base,
-        seed_scheme=seed_scheme,
-        window_length=window_length,
-        private_key=private_key,
+        text=body.text,
+        msg_base=body.msg_base,
+        seed_scheme=body.seed_scheme,
+        window_length=body.window_length,
+        private_key=body.private_key,
     )
-    msg_text = ""
-    for i, msg in enumerate(msgs):
-        msg_text += f"Shift {i}: {msg}\n\n"
-    return {"msg": msg_text}
+    msg_b64 = {}
+    for i, s_msg in enumerate(msgs):
+        msg_b64[i] = []
+        for msg in s_msg:
+            msg_b64[i].append(base64.b64encode(msg))
+    return msg_b64
+
+
+@app.get("/configs")
+async def default_config():
+    configs = {
+        "default": {
+            "encrypt": {
+                "gen_model": GlobalConfig.get("encrypt.default", "gen_model"),
+                "start_pos": GlobalConfig.get("encrypt.default", "start_pos"),
+                "gamma": GlobalConfig.get("encrypt.default", "gamma"),
+                "msg_base": GlobalConfig.get("encrypt.default", "msg_base"),
+                "seed_scheme": GlobalConfig.get(
+                    "encrypt.default", "seed_scheme"
+                ),
+                "window_length": GlobalConfig.get(
+                    "encrypt.default", "window_length"
+                ),
+                "private_key": GlobalConfig.get(
+                    "encrypt.default", "private_key"
+                ),
+                "max_new_tokens_ratio": GlobalConfig.get(
+                    "encrypt.default", "max_new_tokens_ratio"
+                ),
+                "num_beams": GlobalConfig.get("encrypt.default", "num_beams"),
+            },
+            "decrypt": {
+                "gen_model": GlobalConfig.get("encrypt.default", "gen_model"),
+                "msg_base": GlobalConfig.get("encrypt.default", "msg_base"),
+                "seed_scheme": GlobalConfig.get(
+                    "encrypt.default", "seed_scheme"
+                ),
+                "window_length": GlobalConfig.get(
+                    "encrypt.default", "window_length"
+                ),
+                "private_key": GlobalConfig.get(
+                    "encrypt.default", "private_key"
+                ),
+            },
+        },
+        "seed_schemes": SeedSchemeFactory.get_schemes_name(),
+        "models": ModelFactory.get_models_names(),
+    }
+
+    return configs
+
+
+if __name__ == "__main__":
+    port = GlobalConfig.get("server", "port")
+    if port is None:
+        port = 8000
+    else:
+        port = int(port)
+    uvicorn.run(app, host="0.0.0.0", port=port)

@@ -50,3 +50,8 @@ def load_model(name: str, device: torch.device):
     tokenizer = AutoTokenizer.from_pretrained(name)
 
     return model, tokenizer
+
+def static_init(cls):
+    if getattr(cls, "__static_init__", None):
+        cls.__static_init__()
+    return cls

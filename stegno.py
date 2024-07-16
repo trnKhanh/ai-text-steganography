@@ -54,6 +54,7 @@ def generate(
         gamma=gamma,
         msg_base=msg_base,
         vocab=list(tokenizer.get_vocab().values()),
+        tokenizer=tokenizer,
         device=model.device,
         seed_scheme=seed_scheme,
         window_length=window_length,

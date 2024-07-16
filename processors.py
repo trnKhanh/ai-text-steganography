@@ -52,7 +52,9 @@ class BaseProcessor(object):
         self.rng = torch.Generator(device="cpu")
 
         # Compute the ranges of each value in base
-        self.ranges = torch.zeros((self.msg_base + 1), dtype=torch.int64).to(self.device)
+        self.ranges = torch.zeros((self.msg_base + 1), dtype=torch.int64).to(
+            self.device
+        )
         chunk_size = self.vocab_size / self.msg_base
         r = self.vocab_size % self.msg_base
         self.ranges[1:] = chunk_size
@@ -103,6 +105,7 @@ class EncryptorLogitsProcessor(LogitsProcessor, BaseProcessor):
         prompt_ids: torch.Tensor,
         msg: bytes,
         gamma: float,
+        tokenizer,
         start_pos: int = 0,
         *args,
         **kwargs,
@@ -124,6 +127,15 @@ class EncryptorLogitsProcessor(LogitsProcessor, BaseProcessor):
         self.raw_msg = msg
         self.msg = bytes_to_base(msg, self.msg_base)
         self.gamma = gamma
+        special_tokens = [
+            tokenizer.bos_token_id,
+            tokenizer.eos_token_id,
+            tokenizer.sep_token_id,
+            tokenizer.pad_token_id,
+            tokenizer.cls_token_id,
+        ]
+        special_tokens = [x for x in special_tokens if x is not None]
+        self.special_tokens = torch.tensor(special_tokens, device=self.device)
 
     def __call__(
         self, input_ids_batch: torch.LongTensor, scores_batch: torch.FloatTensor
@@ -147,7 +159,10 @@ class EncryptorLogitsProcessor(LogitsProcessor, BaseProcessor):
         """
         Add the bias (gamma) to the valid list tokens
         """
-        ids = self._get_valid_list_ids(input_ids, value)
+        ids = torch.cat(
+            [self._get_valid_list_ids(input_ids, value), self.special_tokens]
+        )
+
         scores[ids] = scores[ids] + self.gamma
         return scores
 

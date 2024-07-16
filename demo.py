@@ -1,26 +1,26 @@
 import torch
 import gradio as gr
 
-from utils import load_model
+from model_factory import ModelFactory
 from stegno import generate, decrypt
 from seed_scheme_factory import SeedSchemeFactory
+from global_config import GlobalConfig
 
 
 def enc_fn(
-    gen_model: str = "openai-community/gpt2",
-    device: str = "cpu",
-    prompt: str = "",
-    msg: str = "",
-    start_pos: int = 0,
-    gamma: float = 2.0,
-    msg_base: int = 2,
-    seed_scheme: str = "dummy_hash",
-    window_length: int = 1,
-    private_key: int = 0,
-    max_new_tokens_ratio: float = 2,
-    num_beams: int = 4,
+    gen_model: str,
+    prompt: str,
+    msg: str,
+    start_pos: int,
+    gamma: float,
+    msg_base: int,
+    seed_scheme: str,
+    window_length: int,
+    private_key: int,
+    max_new_tokens_ratio: float,
+    num_beams: int,
 ):
-    model, tokenizer = load_model(gen_model, torch.device(device))
+    model, tokenizer = ModelFactory.load_model(gen_model)
     text, msg_rate = generate(
         tokenizer=tokenizer,
         model=model,
@@ -39,15 +39,14 @@ def enc_fn(
 
 
 def dec_fn(
-    gen_model: str = "openai-community/gpt2",
-    device: str = "cpu",
-    text: str = "",
-    msg_base: int = 2,
-    seed_scheme: str = "dummy_hash",
-    window_length: int = 1,
-    private_key: int = 0,
+    gen_model: str,
+    text: str,
+    msg_base: int,
+    seed_scheme: str,
+    window_length: int,
+    private_key: int,
 ):
-    model, tokenizer = load_model(gen_model, torch.device(device))
+    model, tokenizer = ModelFactory.load_model(gen_model)
     msgs = decrypt(
         tokenizer=tokenizer,
         device=model.device,
@@ -67,34 +66,56 @@ if __name__ == "__main__":
     enc = gr.Interface(
         fn=enc_fn,
         inputs=[
-            gr.Textbox("openai-community/gpt2"),
-            gr.Textbox("cpu"),
+            gr.Dropdown(
+                value=GlobalConfig.get("encrypt.default", "gen_model"),
+                choices=ModelFactory.get_models_names(),
+            ),
             gr.Textbox(),
             gr.Textbox(),
-            gr.Number(),
-            gr.Number(10.0),
-            gr.Number(2),
-            gr.Dropdown(value="dummy_hash", choices=SeedSchemeFactory.get_schemes_name()),
-            gr.Number(1),
-            gr.Number(),
-            gr.Number(2),
-            gr.Number(4),
+            gr.Number(int(GlobalConfig.get("encrypt.default", "start_pos"))),
+            gr.Number(float(GlobalConfig.get("encrypt.default", "gamma"))),
+            gr.Number(int(GlobalConfig.get("encrypt.default", "msg_base"))),
+            gr.Dropdown(
+                value=GlobalConfig.get("encrypt.default", "seed_scheme"),
+                choices=SeedSchemeFactory.get_schemes_name(),
+            ),
+            gr.Number(
+                int(GlobalConfig.get("encrypt.default", "window_length"))
+            ),
+            gr.Number(int(GlobalConfig.get("encrypt.default", "private_key"))),
+            gr.Number(
+                float(
+                    GlobalConfig.get("encrypt.default", "max_new_tokens_ratio")
+                )
+            ),
+            gr.Number(int(GlobalConfig.get("encrypt.default", "num_beams"))),
         ],
         outputs=[
-            gr.Textbox(label="Text containing message", show_label=True, show_copy_button=True),
+            gr.Textbox(
+                label="Text containing message",
+                show_label=True,
+                show_copy_button=True,
+            ),
             gr.Number(label="Percentage of message in text", show_label=True),
         ],
     )
     dec = gr.Interface(
         fn=dec_fn,
         inputs=[
-            gr.Textbox("openai-community/gpt2"),
-            gr.Textbox("cpu"),
+            gr.Dropdown(
+                value=GlobalConfig.get("decrypt.default", "gen_model"),
+                choices=ModelFactory.get_models_names(),
+            ),
             gr.Textbox(),
-            gr.Number(2),
-            gr.Dropdown(value="dummy_hash", choices=SeedSchemeFactory.get_schemes_name()),
-            gr.Number(1),
-            gr.Number(),
+            gr.Number(int(GlobalConfig.get("decrypt.default", "msg_base"))),
+            gr.Dropdown(
+                value=GlobalConfig.get("decrypt.default", "seed_scheme"),
+                choices=SeedSchemeFactory.get_schemes_name(),
+            ),
+            gr.Number(
+                int(GlobalConfig.get("decrypt.default", "window_length"))
+            ),
+            gr.Number(int(GlobalConfig.get("decrypt.default", "private_key"))),
         ],
         outputs=[
             gr.Textbox(label="Message", show_label=True),

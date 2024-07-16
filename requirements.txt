@@ -7,3 +7,4 @@ torch==2.3.0
 cryptography==42.0.8
 fastapi
 gradio
+uvicorn
