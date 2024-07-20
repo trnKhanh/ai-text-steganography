@@ -34,6 +34,8 @@ python api.py
 ```Bash
 python main.py -h
 ```
+## Documentation
+- To access the documentation for the RestAPI, launch the RestAPI and go to <http://localhost:6969/docs>
 ## Configuration
 - `config.ini` is the config file of the project. We use the modified syntax of the `configparser` package. Every key-value pair follows the syntax: `key = type:value`. Currently, `type` can only be `int`, `float` or `str`.
 - Details on config:
