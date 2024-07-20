@@ -32,6 +32,12 @@ class ModelFactory:
 
             load_device = GlobalConfig.get("models.params", "load_device")
             run_device = GlobalConfig.get("models.params", "run_device")
+            if not torch.cuda.is_available():
+                if load_device == "cuda" or run_device == "cuda":
+                    print("cuda is not available, use cpu instead")
+                    load_device = "cpu"
+                    run_device = "cpu"
+
             if load_device is not None:
                 cls.load_device = torch.device(str(load_device))
             if run_device is not None:
