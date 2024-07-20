@@ -1,7 +1,9 @@
 import base64
+import json
 
 import torch
 from fastapi import FastAPI
+from fastapi.openapi.utils import get_openapi
 import uvicorn
 
 from stegno import generate, decrypt
@@ -13,17 +15,30 @@ from schemes import DecryptionBody, EncryptionBody
 
 app = FastAPI()
 
+with open("resources/examples.json", "r") as f:
+    examples = json.load(f)
 
-@app.post("/encrypt")
+
+@app.post(
+    "/encrypt",
+    responses={
+        200: {
+            "content": {
+                "application/json": {"example": examples["encrypt"]["response"]}
+            }
+        }
+    },
+)
 async def encrypt_api(
     body: EncryptionBody,
 ):
+    byte_msg = base64.b64decode(body.msg)
     model, tokenizer = ModelFactory.load_model(body.gen_model)
     text, msg_rate, tokens_info = generate(
         tokenizer=tokenizer,
         model=model,
         prompt=body.prompt,
-        msg=str.encode(body.msg),
+        msg=byte_msg,
         start_pos_p=[body.start_pos],
         delta=body.delta,
         msg_base=body.msg_base,
@@ -37,7 +52,16 @@ async def encrypt_api(
     return {"text": text, "msg_rate": msg_rate, "tokens_info": tokens_info}
 
 
-@app.post("/decrypt")
+@app.post(
+    "/decrypt",
+    responses={
+        200: {
+            "content": {
+                "application/json": {"example": examples["decrypt"]["response"]}
+            }
+        }
+    },
+)
 async def decrypt_api(body: DecryptionBody):
     model, tokenizer = ModelFactory.load_model(body.gen_model)
     msgs = decrypt(
@@ -57,7 +81,16 @@ async def decrypt_api(body: DecryptionBody):
     return msg_b64
 
 
-@app.get("/configs")
+@app.get(
+    "/configs",
+    responses={
+        200: {
+            "content": {
+                "application/json": {"example": examples["configs"]["response"]}
+            },
+        }
+    },
+)
 async def default_config():
     configs = {
         "default": {

@@ -1,8 +1,14 @@
+import json
+from typing import Literal
+
 from pydantic import BaseModel, Field
+
 from global_config import GlobalConfig
 from model_factory import ModelFactory
 from seed_scheme_factory import SeedSchemeFactory
-from typing import Literal
+
+with open("resources/examples.json", "r") as f:
+    examples = json.load(f)
 
 
 class EncryptionBody(BaseModel):
@@ -59,6 +65,9 @@ class EncryptionBody(BaseModel):
         title="Penalty used to avoid repetition when sampling tokens",
         ge=1,
     )
+    model_config = {
+        "json_schema_extra": {"examples": [examples["encrypt"]["request"]]}
+    }
 
 
 class DecryptionBody(BaseModel):
@@ -86,3 +95,6 @@ class DecryptionBody(BaseModel):
         title="Private key used to compute the seed for PRF",
         ge=0,
     )
+    model_config = {
+        "json_schema_extra": {"examples": [examples["decrypt"]["request"]]}
+    }
