@@ -12,7 +12,7 @@ def generate(
     prompt: str,
     msg: bytes,
     start_pos_p: list[int],
-    gamma: float,
+    delta: float,
     msg_base: int,
     seed_scheme: str,
     window_length: int = 1,
@@ -30,7 +30,7 @@ def generate(
         model: generative model to use.
         prompt: input prompt.
         msg: message to hide in the text.
-        gamma: bias add to scores of token in valid list.
+        delta: bias add to scores of token in valid list.
         msg_base: base of the message.
         seed_scheme: scheme used to compute the seed.
         window_length: length of window to compute the seed.
@@ -52,7 +52,7 @@ def generate(
         prompt_ids=tokenized_input.input_ids,
         msg=msg,
         start_pos=start_pos,
-        gamma=gamma,
+        delta=delta,
         msg_base=msg_base,
         vocab=list(tokenizer.get_vocab().values()),
         tokenizer=tokenizer,
@@ -107,7 +107,7 @@ def decrypt(
         tokenizer: tokenizer to use.
         text: text to decode.
         msg_base: base of the message.
-        gamma: bias added to scores of valid list.
+        delta: bias added to scores of valid list.
         seed_scheme: scheme used to compute the seed.
         window_length: length of window to compute the seed.
         salt_key: salt to add to the seed.

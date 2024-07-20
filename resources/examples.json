@@ -1,0 +1,1714 @@
+{
+  "decrypt": {
+    "request": {
+      "text": "\n\nThis week, I had some good news for you:\n\nYou're welcome!\n\nI hope you have fun and enjoy it, and I hope you enjoy this week.\n\nThanks for visiting my blog.\n\nCheers! 🙂\n\n~Kara\n\nUpdate: This post was updated to add a new comment to my post about how to create a free account. You can read the original post at: http://my.reddit.com/message/comments/1u7j3p/this_is_what_i_wanted_to/ (I've updated my post to include my own comments, so check out my blog for more details)\n\nThis post was updated to include a new comment to my post about how to create a free account. You can read the original post at: http://my.reddit.com/message/comments/1u7j3p/this_is_what_i_wanted_to/",
+      "gen_model": "gpt2",
+      "msg_base": 2,
+      "seed_scheme": "sha_left_hash",
+      "window_length": 1,
+      "private_key": 0
+    },
+    "response": {
+      "0": ["KjQ0uZA0uZAwkDc0sbKQMjC8ghIG5pY2UgA="],
+      "1": ["VGhpcyBpcyBhIG5pY2UgZGF5BCQNzSxspAA="],
+      "2": ["qNDS5kDS5kDCQNzSxspAyMLyCEgbmljZSAA="],
+      "3": ["UaGlzIGlzIGEgbmljZSBkYXkEJA3NLGykAA="],
+      "4": ["o0NLmQNLmQMJA3NLGykDIwvIISBuaWNlIA=="],
+      "5": ["RoaXMgaXMgYSBuaWNlIGRheQQkDc0sbKIA=="],
+      "6": ["jQ0uZA0uZAwkDc0sbKQMjC8ghIG5pY2UIA=="],
+      "7": ["GhpcyBpcyBhIG5pY2UgZGF5BCQNzSxspAA=="]
+    }
+  },
+  "encrypt": {
+    "request": {
+      "prompt": "A nice day:",
+      "msg": "VGhpcyBpcyBhIG5pY2UgZGF5",
+      "gen_model": "gpt2",
+      "start_pos": 0,
+      "delta": 10,
+      "msg_base": 2,
+      "seed_scheme": "sha_left_hash",
+      "window_length": 1,
+      "private_key": 0,
+      "max_new_tokens_ratio": 2,
+      "num_beams": 4,
+      "repetition_penalty": 1
+    },
+    "response": {
+      "text": "\n\nThis week, I had some good news for you:\n\nYou're welcome!\n\nI hope you have fun and enjoy it, and I hope you enjoy this week.\n\nThanks for visiting my blog.\n\nCheers! 🙂\n\n~Kara\n\nUpdate: This post was updated to add a new comment to my post about how to create a free account. You can read the original post at: http://my.reddit.com/message/comments/1u7j3p/this_is_what_i_wanted_to/ (I've updated my post to include my own comments, so check out my blog for more details)\n\nThis post was updated to include a new comment to my post about how to create a free account. You can read the original post at: http://my.reddit.com/message/comments/1u7j3p/this_is_what_i_wanted_to/",
+      "msg_rate": 1,
+      "tokens_info": [
+        {
+          "token": "\n",
+          "base_enc": 0,
+          "byte_enc": 0,
+          "base_msg": -1,
+          "byte_msg": -1,
+          "byte_id": -1
+        },
+        {
+          "token": "\n",
+          "base_enc": 0,
+          "byte_enc": 84,
+          "base_msg": 0,
+          "byte_msg": 84,
+          "byte_id": 0
+        },
+        {
+          "token": "This",
+          "base_enc": 1,
+          "byte_enc": 84,
+          "base_msg": 1,
+          "byte_msg": 84,
+          "byte_id": 0
+        },
+        {
+          "token": " week",
+          "base_enc": 0,
+          "byte_enc": 84,
+          "base_msg": 0,
+          "byte_msg": 84,
+          "byte_id": 0
+        },
+        {
+          "token": ",",
+          "base_enc": 1,
+          "byte_enc": 84,
+          "base_msg": 1,
+          "byte_msg": 84,
+          "byte_id": 0
+        },
+        {
+          "token": " I",
+          "base_enc": 0,
+          "byte_enc": 84,
+          "base_msg": 0,
+          "byte_msg": 84,
+          "byte_id": 0
+        },
+        {
+          "token": " had",
+          "base_enc": 1,
+          "byte_enc": 84,
+          "base_msg": 1,
+          "byte_msg": 84,
+          "byte_id": 0
+        },
+        {
+          "token": " some",
+          "base_enc": 0,
+          "byte_enc": 84,
+          "base_msg": 0,
+          "byte_msg": 84,
+          "byte_id": 0
+        },
+        {
+          "token": " good",
+          "base_enc": 0,
+          "byte_enc": 84,
+          "base_msg": 0,
+          "byte_msg": 84,
+          "byte_id": 0
+        },
+        {
+          "token": " news",
+          "base_enc": 0,
+          "byte_enc": 104,
+          "base_msg": 0,
+          "byte_msg": 104,
+          "byte_id": 1
+        },
+        {
+          "token": " for",
+          "base_enc": 1,
+          "byte_enc": 104,
+          "base_msg": 1,
+          "byte_msg": 104,
+          "byte_id": 1
+        },
+        {
+          "token": " you",
+          "base_enc": 1,
+          "byte_enc": 104,
+          "base_msg": 1,
+          "byte_msg": 104,
+          "byte_id": 1
+        },
+        {
+          "token": ":",
+          "base_enc": 0,
+          "byte_enc": 104,
+          "base_msg": 0,
+          "byte_msg": 104,
+          "byte_id": 1
+        },
+        {
+          "token": "\n",
+          "base_enc": 1,
+          "byte_enc": 104,
+          "base_msg": 1,
+          "byte_msg": 104,
+          "byte_id": 1
+        },
+        {
+          "token": "\n",
+          "base_enc": 0,
+          "byte_enc": 104,
+          "base_msg": 0,
+          "byte_msg": 104,
+          "byte_id": 1
+        },
+        {
+          "token": "You",
+          "base_enc": 0,
+          "byte_enc": 104,
+          "base_msg": 0,
+          "byte_msg": 104,
+          "byte_id": 1
+        },
+        {
+          "token": "'re",
+          "base_enc": 0,
+          "byte_enc": 104,
+          "base_msg": 0,
+          "byte_msg": 104,
+          "byte_id": 1
+        },
+        {
+          "token": " welcome",
+          "base_enc": 0,
+          "byte_enc": 105,
+          "base_msg": 0,
+          "byte_msg": 105,
+          "byte_id": 2
+        },
+        {
+          "token": "!",
+          "base_enc": 1,
+          "byte_enc": 105,
+          "base_msg": 1,
+          "byte_msg": 105,
+          "byte_id": 2
+        },
+        {
+          "token": "\n",
+          "base_enc": 1,
+          "byte_enc": 105,
+          "base_msg": 1,
+          "byte_msg": 105,
+          "byte_id": 2
+        },
+        {
+          "token": "\n",
+          "base_enc": 0,
+          "byte_enc": 105,
+          "base_msg": 0,
+          "byte_msg": 105,
+          "byte_id": 2
+        },
+        {
+          "token": "I",
+          "base_enc": 1,
+          "byte_enc": 105,
+          "base_msg": 1,
+          "byte_msg": 105,
+          "byte_id": 2
+        },
+        {
+          "token": " hope",
+          "base_enc": 0,
+          "byte_enc": 105,
+          "base_msg": 0,
+          "byte_msg": 105,
+          "byte_id": 2
+        },
+        {
+          "token": " you",
+          "base_enc": 0,
+          "byte_enc": 105,
+          "base_msg": 0,
+          "byte_msg": 105,
+          "byte_id": 2
+        },
+        {
+          "token": " have",
+          "base_enc": 1,
+          "byte_enc": 105,
+          "base_msg": 1,
+          "byte_msg": 105,
+          "byte_id": 2
+        },
+        {
+          "token": " fun",
+          "base_enc": 0,
+          "byte_enc": 115,
+          "base_msg": 0,
+          "byte_msg": 115,
+          "byte_id": 3
+        },
+        {
+          "token": " and",
+          "base_enc": 1,
+          "byte_enc": 115,
+          "base_msg": 1,
+          "byte_msg": 115,
+          "byte_id": 3
+        },
+        {
+          "token": " enjoy",
+          "base_enc": 1,
+          "byte_enc": 115,
+          "base_msg": 1,
+          "byte_msg": 115,
+          "byte_id": 3
+        },
+        {
+          "token": " it",
+          "base_enc": 1,
+          "byte_enc": 115,
+          "base_msg": 1,
+          "byte_msg": 115,
+          "byte_id": 3
+        },
+        {
+          "token": ",",
+          "base_enc": 0,
+          "byte_enc": 115,
+          "base_msg": 0,
+          "byte_msg": 115,
+          "byte_id": 3
+        },
+        {
+          "token": " and",
+          "base_enc": 0,
+          "byte_enc": 115,
+          "base_msg": 0,
+          "byte_msg": 115,
+          "byte_id": 3
+        },
+        {
+          "token": " I",
+          "base_enc": 1,
+          "byte_enc": 115,
+          "base_msg": 1,
+          "byte_msg": 115,
+          "byte_id": 3
+        },
+        {
+          "token": " hope",
+          "base_enc": 1,
+          "byte_enc": 115,
+          "base_msg": 1,
+          "byte_msg": 115,
+          "byte_id": 3
+        },
+        {
+          "token": " you",
+          "base_enc": 0,
+          "byte_enc": 32,
+          "base_msg": 0,
+          "byte_msg": 32,
+          "byte_id": 4
+        },
+        {
+          "token": " enjoy",
+          "base_enc": 0,
+          "byte_enc": 32,
+          "base_msg": 0,
+          "byte_msg": 32,
+          "byte_id": 4
+        },
+        {
+          "token": " this",
+          "base_enc": 1,
+          "byte_enc": 32,
+          "base_msg": 1,
+          "byte_msg": 32,
+          "byte_id": 4
+        },
+        {
+          "token": " week",
+          "base_enc": 0,
+          "byte_enc": 32,
+          "base_msg": 0,
+          "byte_msg": 32,
+          "byte_id": 4
+        },
+        {
+          "token": ".",
+          "base_enc": 0,
+          "byte_enc": 32,
+          "base_msg": 0,
+          "byte_msg": 32,
+          "byte_id": 4
+        },
+        {
+          "token": "\n",
+          "base_enc": 0,
+          "byte_enc": 32,
+          "base_msg": 0,
+          "byte_msg": 32,
+          "byte_id": 4
+        },
+        {
+          "token": "\n",
+          "base_enc": 0,
+          "byte_enc": 32,
+          "base_msg": 0,
+          "byte_msg": 32,
+          "byte_id": 4
+        },
+        {
+          "token": "Thanks",
+          "base_enc": 0,
+          "byte_enc": 32,
+          "base_msg": 0,
+          "byte_msg": 32,
+          "byte_id": 4
+        },
+        {
+          "token": " for",
+          "base_enc": 0,
+          "byte_enc": 105,
+          "base_msg": 0,
+          "byte_msg": 105,
+          "byte_id": 5
+        },
+        {
+          "token": " visiting",
+          "base_enc": 1,
+          "byte_enc": 105,
+          "base_msg": 1,
+          "byte_msg": 105,
+          "byte_id": 5
+        },
+        {
+          "token": " my",
+          "base_enc": 1,
+          "byte_enc": 105,
+          "base_msg": 1,
+          "byte_msg": 105,
+          "byte_id": 5
+        },
+        {
+          "token": " blog",
+          "base_enc": 0,
+          "byte_enc": 105,
+          "base_msg": 0,
+          "byte_msg": 105,
+          "byte_id": 5
+        },
+        {
+          "token": ".",
+          "base_enc": 1,
+          "byte_enc": 105,
+          "base_msg": 1,
+          "byte_msg": 105,
+          "byte_id": 5
+        },
+        {
+          "token": "\n",
+          "base_enc": 0,
+          "byte_enc": 105,
+          "base_msg": 0,
+          "byte_msg": 105,
+          "byte_id": 5
+        },
+        {
+          "token": "\n",
+          "base_enc": 0,
+          "byte_enc": 105,
+          "base_msg": 0,
+          "byte_msg": 105,
+          "byte_id": 5
+        },
+        {
+          "token": "Che",
+          "base_enc": 1,
+          "byte_enc": 105,
+          "base_msg": 1,
+          "byte_msg": 105,
+          "byte_id": 5
+        },
+        {
+          "token": "ers",
+          "base_enc": 0,
+          "byte_enc": 115,
+          "base_msg": 0,
+          "byte_msg": 115,
+          "byte_id": 6
+        },
+        {
+          "token": "!",
+          "base_enc": 1,
+          "byte_enc": 115,
+          "base_msg": 1,
+          "byte_msg": 115,
+          "byte_id": 6
+        },
+        {
+          "token": " 🙂",
+          "base_enc": 1,
+          "byte_enc": 115,
+          "base_msg": 1,
+          "byte_msg": 115,
+          "byte_id": 6
+        },
+        {
+          "token": "\n",
+          "base_enc": 1,
+          "byte_enc": 115,
+          "base_msg": 1,
+          "byte_msg": 115,
+          "byte_id": 6
+        },
+        {
+          "token": "\n",
+          "base_enc": 0,
+          "byte_enc": 115,
+          "base_msg": 0,
+          "byte_msg": 115,
+          "byte_id": 6
+        },
+        {
+          "token": "~",
+          "base_enc": 0,
+          "byte_enc": 115,
+          "base_msg": 0,
+          "byte_msg": 115,
+          "byte_id": 6
+        },
+        {
+          "token": "K",
+          "base_enc": 1,
+          "byte_enc": 115,
+          "base_msg": 1,
+          "byte_msg": 115,
+          "byte_id": 6
+        },
+        {
+          "token": "ara",
+          "base_enc": 1,
+          "byte_enc": 115,
+          "base_msg": 1,
+          "byte_msg": 115,
+          "byte_id": 6
+        },
+        {
+          "token": "\n",
+          "base_enc": 0,
+          "byte_enc": 32,
+          "base_msg": 0,
+          "byte_msg": 32,
+          "byte_id": 7
+        },
+        {
+          "token": "\n",
+          "base_enc": 0,
+          "byte_enc": 32,
+          "base_msg": 0,
+          "byte_msg": 32,
+          "byte_id": 7
+        },
+        {
+          "token": "Update",
+          "base_enc": 1,
+          "byte_enc": 32,
+          "base_msg": 1,
+          "byte_msg": 32,
+          "byte_id": 7
+        },
+        {
+          "token": ":",
+          "base_enc": 0,
+          "byte_enc": 32,
+          "base_msg": 0,
+          "byte_msg": 32,
+          "byte_id": 7
+        },
+        {
+          "token": " This",
+          "base_enc": 0,
+          "byte_enc": 32,
+          "base_msg": 0,
+          "byte_msg": 32,
+          "byte_id": 7
+        },
+        {
+          "token": " post",
+          "base_enc": 0,
+          "byte_enc": 32,
+          "base_msg": 0,
+          "byte_msg": 32,
+          "byte_id": 7
+        },
+        {
+          "token": " was",
+          "base_enc": 0,
+          "byte_enc": 32,
+          "base_msg": 0,
+          "byte_msg": 32,
+          "byte_id": 7
+        },
+        {
+          "token": " updated",
+          "base_enc": 0,
+          "byte_enc": 32,
+          "base_msg": 0,
+          "byte_msg": 32,
+          "byte_id": 7
+        },
+        {
+          "token": " to",
+          "base_enc": 0,
+          "byte_enc": 97,
+          "base_msg": 0,
+          "byte_msg": 97,
+          "byte_id": 8
+        },
+        {
+          "token": " add",
+          "base_enc": 1,
+          "byte_enc": 97,
+          "base_msg": 1,
+          "byte_msg": 97,
+          "byte_id": 8
+        },
+        {
+          "token": " a",
+          "base_enc": 1,
+          "byte_enc": 97,
+          "base_msg": 1,
+          "byte_msg": 97,
+          "byte_id": 8
+        },
+        {
+          "token": " new",
+          "base_enc": 0,
+          "byte_enc": 97,
+          "base_msg": 0,
+          "byte_msg": 97,
+          "byte_id": 8
+        },
+        {
+          "token": " comment",
+          "base_enc": 0,
+          "byte_enc": 97,
+          "base_msg": 0,
+          "byte_msg": 97,
+          "byte_id": 8
+        },
+        {
+          "token": " to",
+          "base_enc": 0,
+          "byte_enc": 97,
+          "base_msg": 0,
+          "byte_msg": 97,
+          "byte_id": 8
+        },
+        {
+          "token": " my",
+          "base_enc": 0,
+          "byte_enc": 97,
+          "base_msg": 0,
+          "byte_msg": 97,
+          "byte_id": 8
+        },
+        {
+          "token": " post",
+          "base_enc": 1,
+          "byte_enc": 97,
+          "base_msg": 1,
+          "byte_msg": 97,
+          "byte_id": 8
+        },
+        {
+          "token": " about",
+          "base_enc": 0,
+          "byte_enc": 32,
+          "base_msg": 0,
+          "byte_msg": 32,
+          "byte_id": 9
+        },
+        {
+          "token": " how",
+          "base_enc": 0,
+          "byte_enc": 32,
+          "base_msg": 0,
+          "byte_msg": 32,
+          "byte_id": 9
+        },
+        {
+          "token": " to",
+          "base_enc": 1,
+          "byte_enc": 32,
+          "base_msg": 1,
+          "byte_msg": 32,
+          "byte_id": 9
+        },
+        {
+          "token": " create",
+          "base_enc": 0,
+          "byte_enc": 32,
+          "base_msg": 0,
+          "byte_msg": 32,
+          "byte_id": 9
+        },
+        {
+          "token": " a",
+          "base_enc": 0,
+          "byte_enc": 32,
+          "base_msg": 0,
+          "byte_msg": 32,
+          "byte_id": 9
+        },
+        {
+          "token": " free",
+          "base_enc": 0,
+          "byte_enc": 32,
+          "base_msg": 0,
+          "byte_msg": 32,
+          "byte_id": 9
+        },
+        {
+          "token": " account",
+          "base_enc": 0,
+          "byte_enc": 32,
+          "base_msg": 0,
+          "byte_msg": 32,
+          "byte_id": 9
+        },
+        {
+          "token": ".",
+          "base_enc": 0,
+          "byte_enc": 32,
+          "base_msg": 0,
+          "byte_msg": 32,
+          "byte_id": 9
+        },
+        {
+          "token": " You",
+          "base_enc": 0,
+          "byte_enc": 110,
+          "base_msg": 0,
+          "byte_msg": 110,
+          "byte_id": 10
+        },
+        {
+          "token": " can",
+          "base_enc": 1,
+          "byte_enc": 110,
+          "base_msg": 1,
+          "byte_msg": 110,
+          "byte_id": 10
+        },
+        {
+          "token": " read",
+          "base_enc": 1,
+          "byte_enc": 110,
+          "base_msg": 1,
+          "byte_msg": 110,
+          "byte_id": 10
+        },
+        {
+          "token": " the",
+          "base_enc": 0,
+          "byte_enc": 110,
+          "base_msg": 0,
+          "byte_msg": 110,
+          "byte_id": 10
+        },
+        {
+          "token": " original",
+          "base_enc": 1,
+          "byte_enc": 110,
+          "base_msg": 1,
+          "byte_msg": 110,
+          "byte_id": 10
+        },
+        {
+          "token": " post",
+          "base_enc": 1,
+          "byte_enc": 110,
+          "base_msg": 1,
+          "byte_msg": 110,
+          "byte_id": 10
+        },
+        {
+          "token": " at",
+          "base_enc": 1,
+          "byte_enc": 110,
+          "base_msg": 1,
+          "byte_msg": 110,
+          "byte_id": 10
+        },
+        {
+          "token": ":",
+          "base_enc": 0,
+          "byte_enc": 110,
+          "base_msg": 0,
+          "byte_msg": 110,
+          "byte_id": 10
+        },
+        {
+          "token": " http",
+          "base_enc": 0,
+          "byte_enc": 105,
+          "base_msg": 0,
+          "byte_msg": 105,
+          "byte_id": 11
+        },
+        {
+          "token": "://",
+          "base_enc": 1,
+          "byte_enc": 105,
+          "base_msg": 1,
+          "byte_msg": 105,
+          "byte_id": 11
+        },
+        {
+          "token": "my",
+          "base_enc": 1,
+          "byte_enc": 105,
+          "base_msg": 1,
+          "byte_msg": 105,
+          "byte_id": 11
+        },
+        {
+          "token": ".",
+          "base_enc": 0,
+          "byte_enc": 105,
+          "base_msg": 0,
+          "byte_msg": 105,
+          "byte_id": 11
+        },
+        {
+          "token": "reddit",
+          "base_enc": 1,
+          "byte_enc": 105,
+          "base_msg": 1,
+          "byte_msg": 105,
+          "byte_id": 11
+        },
+        {
+          "token": ".",
+          "base_enc": 0,
+          "byte_enc": 105,
+          "base_msg": 0,
+          "byte_msg": 105,
+          "byte_id": 11
+        },
+        {
+          "token": "com",
+          "base_enc": 0,
+          "byte_enc": 105,
+          "base_msg": 0,
+          "byte_msg": 105,
+          "byte_id": 11
+        },
+        {
+          "token": "/",
+          "base_enc": 1,
+          "byte_enc": 105,
+          "base_msg": 1,
+          "byte_msg": 105,
+          "byte_id": 11
+        },
+        {
+          "token": "message",
+          "base_enc": 0,
+          "byte_enc": 99,
+          "base_msg": 0,
+          "byte_msg": 99,
+          "byte_id": 12
+        },
+        {
+          "token": "/",
+          "base_enc": 1,
+          "byte_enc": 99,
+          "base_msg": 1,
+          "byte_msg": 99,
+          "byte_id": 12
+        },
+        {
+          "token": "comments",
+          "base_enc": 1,
+          "byte_enc": 99,
+          "base_msg": 1,
+          "byte_msg": 99,
+          "byte_id": 12
+        },
+        {
+          "token": "/",
+          "base_enc": 0,
+          "byte_enc": 99,
+          "base_msg": 0,
+          "byte_msg": 99,
+          "byte_id": 12
+        },
+        {
+          "token": "1",
+          "base_enc": 0,
+          "byte_enc": 99,
+          "base_msg": 0,
+          "byte_msg": 99,
+          "byte_id": 12
+        },
+        {
+          "token": "u",
+          "base_enc": 0,
+          "byte_enc": 99,
+          "base_msg": 0,
+          "byte_msg": 99,
+          "byte_id": 12
+        },
+        {
+          "token": "7",
+          "base_enc": 1,
+          "byte_enc": 99,
+          "base_msg": 1,
+          "byte_msg": 99,
+          "byte_id": 12
+        },
+        {
+          "token": "j",
+          "base_enc": 1,
+          "byte_enc": 99,
+          "base_msg": 1,
+          "byte_msg": 99,
+          "byte_id": 12
+        },
+        {
+          "token": "3",
+          "base_enc": 0,
+          "byte_enc": 101,
+          "base_msg": 0,
+          "byte_msg": 101,
+          "byte_id": 13
+        },
+        {
+          "token": "p",
+          "base_enc": 1,
+          "byte_enc": 101,
+          "base_msg": 1,
+          "byte_msg": 101,
+          "byte_id": 13
+        },
+        {
+          "token": "/",
+          "base_enc": 1,
+          "byte_enc": 101,
+          "base_msg": 1,
+          "byte_msg": 101,
+          "byte_id": 13
+        },
+        {
+          "token": "this",
+          "base_enc": 0,
+          "byte_enc": 101,
+          "base_msg": 0,
+          "byte_msg": 101,
+          "byte_id": 13
+        },
+        {
+          "token": "_",
+          "base_enc": 0,
+          "byte_enc": 101,
+          "base_msg": 0,
+          "byte_msg": 101,
+          "byte_id": 13
+        },
+        {
+          "token": "is",
+          "base_enc": 1,
+          "byte_enc": 101,
+          "base_msg": 1,
+          "byte_msg": 101,
+          "byte_id": 13
+        },
+        {
+          "token": "_",
+          "base_enc": 0,
+          "byte_enc": 101,
+          "base_msg": 0,
+          "byte_msg": 101,
+          "byte_id": 13
+        },
+        {
+          "token": "what",
+          "base_enc": 1,
+          "byte_enc": 101,
+          "base_msg": 1,
+          "byte_msg": 101,
+          "byte_id": 13
+        },
+        {
+          "token": "_",
+          "base_enc": 0,
+          "byte_enc": 32,
+          "base_msg": 0,
+          "byte_msg": 32,
+          "byte_id": 14
+        },
+        {
+          "token": "i",
+          "base_enc": 0,
+          "byte_enc": 32,
+          "base_msg": 0,
+          "byte_msg": 32,
+          "byte_id": 14
+        },
+        {
+          "token": "_",
+          "base_enc": 1,
+          "byte_enc": 32,
+          "base_msg": 1,
+          "byte_msg": 32,
+          "byte_id": 14
+        },
+        {
+          "token": "w",
+          "base_enc": 0,
+          "byte_enc": 32,
+          "base_msg": 0,
+          "byte_msg": 32,
+          "byte_id": 14
+        },
+        {
+          "token": "anted",
+          "base_enc": 0,
+          "byte_enc": 32,
+          "base_msg": 0,
+          "byte_msg": 32,
+          "byte_id": 14
+        },
+        {
+          "token": "_",
+          "base_enc": 0,
+          "byte_enc": 32,
+          "base_msg": 0,
+          "byte_msg": 32,
+          "byte_id": 14
+        },
+        {
+          "token": "to",
+          "base_enc": 0,
+          "byte_enc": 32,
+          "base_msg": 0,
+          "byte_msg": 32,
+          "byte_id": 14
+        },
+        {
+          "token": "/",
+          "base_enc": 0,
+          "byte_enc": 32,
+          "base_msg": 0,
+          "byte_msg": 32,
+          "byte_id": 14
+        },
+        {
+          "token": " (",
+          "base_enc": 0,
+          "byte_enc": 100,
+          "base_msg": 0,
+          "byte_msg": 100,
+          "byte_id": 15
+        },
+        {
+          "token": "I",
+          "base_enc": 1,
+          "byte_enc": 100,
+          "base_msg": 1,
+          "byte_msg": 100,
+          "byte_id": 15
+        },
+        {
+          "token": "'ve",
+          "base_enc": 1,
+          "byte_enc": 100,
+          "base_msg": 1,
+          "byte_msg": 100,
+          "byte_id": 15
+        },
+        {
+          "token": " updated",
+          "base_enc": 0,
+          "byte_enc": 100,
+          "base_msg": 0,
+          "byte_msg": 100,
+          "byte_id": 15
+        },
+        {
+          "token": " my",
+          "base_enc": 0,
+          "byte_enc": 100,
+          "base_msg": 0,
+          "byte_msg": 100,
+          "byte_id": 15
+        },
+        {
+          "token": " post",
+          "base_enc": 1,
+          "byte_enc": 100,
+          "base_msg": 1,
+          "byte_msg": 100,
+          "byte_id": 15
+        },
+        {
+          "token": " to",
+          "base_enc": 0,
+          "byte_enc": 100,
+          "base_msg": 0,
+          "byte_msg": 100,
+          "byte_id": 15
+        },
+        {
+          "token": " include",
+          "base_enc": 0,
+          "byte_enc": 100,
+          "base_msg": 0,
+          "byte_msg": 100,
+          "byte_id": 15
+        },
+        {
+          "token": " my",
+          "base_enc": 0,
+          "byte_enc": 97,
+          "base_msg": 0,
+          "byte_msg": 97,
+          "byte_id": 16
+        },
+        {
+          "token": " own",
+          "base_enc": 1,
+          "byte_enc": 97,
+          "base_msg": 1,
+          "byte_msg": 97,
+          "byte_id": 16
+        },
+        {
+          "token": " comments",
+          "base_enc": 1,
+          "byte_enc": 97,
+          "base_msg": 1,
+          "byte_msg": 97,
+          "byte_id": 16
+        },
+        {
+          "token": ",",
+          "base_enc": 0,
+          "byte_enc": 97,
+          "base_msg": 0,
+          "byte_msg": 97,
+          "byte_id": 16
+        },
+        {
+          "token": " so",
+          "base_enc": 0,
+          "byte_enc": 97,
+          "base_msg": 0,
+          "byte_msg": 97,
+          "byte_id": 16
+        },
+        {
+          "token": " check",
+          "base_enc": 0,
+          "byte_enc": 97,
+          "base_msg": 0,
+          "byte_msg": 97,
+          "byte_id": 16
+        },
+        {
+          "token": " out",
+          "base_enc": 0,
+          "byte_enc": 97,
+          "base_msg": 0,
+          "byte_msg": 97,
+          "byte_id": 16
+        },
+        {
+          "token": " my",
+          "base_enc": 1,
+          "byte_enc": 97,
+          "base_msg": 1,
+          "byte_msg": 97,
+          "byte_id": 16
+        },
+        {
+          "token": " blog",
+          "base_enc": 0,
+          "byte_enc": 121,
+          "base_msg": 0,
+          "byte_msg": 121,
+          "byte_id": 17
+        },
+        {
+          "token": " for",
+          "base_enc": 1,
+          "byte_enc": 121,
+          "base_msg": 1,
+          "byte_msg": 121,
+          "byte_id": 17
+        },
+        {
+          "token": " more",
+          "base_enc": 1,
+          "byte_enc": 121,
+          "base_msg": 1,
+          "byte_msg": 121,
+          "byte_id": 17
+        },
+        {
+          "token": " details",
+          "base_enc": 1,
+          "byte_enc": 121,
+          "base_msg": 1,
+          "byte_msg": 121,
+          "byte_id": 17
+        },
+        {
+          "token": ")",
+          "base_enc": 1,
+          "byte_enc": 121,
+          "base_msg": 1,
+          "byte_msg": 121,
+          "byte_id": 17
+        },
+        {
+          "token": "\n",
+          "base_enc": 0,
+          "byte_enc": 121,
+          "base_msg": 0,
+          "byte_msg": 121,
+          "byte_id": 17
+        },
+        {
+          "token": "\n",
+          "base_enc": 0,
+          "byte_enc": 121,
+          "base_msg": 0,
+          "byte_msg": 121,
+          "byte_id": 17
+        },
+        {
+          "token": "This",
+          "base_enc": 1,
+          "byte_enc": 121,
+          "base_msg": 1,
+          "byte_msg": 121,
+          "byte_id": 17
+        },
+        {
+          "token": " post",
+          "base_enc": 0,
+          "byte_enc": 4,
+          "base_msg": -1,
+          "byte_msg": -1,
+          "byte_id": 18
+        },
+        {
+          "token": " was",
+          "base_enc": 0,
+          "byte_enc": 4,
+          "base_msg": -1,
+          "byte_msg": -1,
+          "byte_id": 18
+        },
+        {
+          "token": " updated",
+          "base_enc": 0,
+          "byte_enc": 4,
+          "base_msg": -1,
+          "byte_msg": -1,
+          "byte_id": 18
+        },
+        {
+          "token": " to",
+          "base_enc": 0,
+          "byte_enc": 4,
+          "base_msg": -1,
+          "byte_msg": -1,
+          "byte_id": 18
+        },
+        {
+          "token": " include",
+          "base_enc": 0,
+          "byte_enc": 4,
+          "base_msg": -1,
+          "byte_msg": -1,
+          "byte_id": 18
+        },
+        {
+          "token": " a",
+          "base_enc": 1,
+          "byte_enc": 4,
+          "base_msg": -1,
+          "byte_msg": -1,
+          "byte_id": 18
+        },
+        {
+          "token": " new",
+          "base_enc": 0,
+          "byte_enc": 4,
+          "base_msg": -1,
+          "byte_msg": -1,
+          "byte_id": 18
+        },
+        {
+          "token": " comment",
+          "base_enc": 0,
+          "byte_enc": 4,
+          "base_msg": -1,
+          "byte_msg": -1,
+          "byte_id": 18
+        },
+        {
+          "token": " to",
+          "base_enc": 0,
+          "byte_enc": 36,
+          "base_msg": -1,
+          "byte_msg": -1,
+          "byte_id": 19
+        },
+        {
+          "token": " my",
+          "base_enc": 0,
+          "byte_enc": 36,
+          "base_msg": -1,
+          "byte_msg": -1,
+          "byte_id": 19
+        },
+        {
+          "token": " post",
+          "base_enc": 1,
+          "byte_enc": 36,
+          "base_msg": -1,
+          "byte_msg": -1,
+          "byte_id": 19
+        },
+        {
+          "token": " about",
+          "base_enc": 0,
+          "byte_enc": 36,
+          "base_msg": -1,
+          "byte_msg": -1,
+          "byte_id": 19
+        },
+        {
+          "token": " how",
+          "base_enc": 0,
+          "byte_enc": 36,
+          "base_msg": -1,
+          "byte_msg": -1,
+          "byte_id": 19
+        },
+        {
+          "token": " to",
+          "base_enc": 1,
+          "byte_enc": 36,
+          "base_msg": -1,
+          "byte_msg": -1,
+          "byte_id": 19
+        },
+        {
+          "token": " create",
+          "base_enc": 0,
+          "byte_enc": 36,
+          "base_msg": -1,
+          "byte_msg": -1,
+          "byte_id": 19
+        },
+        {
+          "token": " a",
+          "base_enc": 0,
+          "byte_enc": 36,
+          "base_msg": -1,
+          "byte_msg": -1,
+          "byte_id": 19
+        },
+        {
+          "token": " free",
+          "base_enc": 0,
+          "byte_enc": 13,
+          "base_msg": -1,
+          "byte_msg": -1,
+          "byte_id": 20
+        },
+        {
+          "token": " account",
+          "base_enc": 0,
+          "byte_enc": 13,
+          "base_msg": -1,
+          "byte_msg": -1,
+          "byte_id": 20
+        },
+        {
+          "token": ".",
+          "base_enc": 0,
+          "byte_enc": 13,
+          "base_msg": -1,
+          "byte_msg": -1,
+          "byte_id": 20
+        },
+        {
+          "token": " You",
+          "base_enc": 0,
+          "byte_enc": 13,
+          "base_msg": -1,
+          "byte_msg": -1,
+          "byte_id": 20
+        },
+        {
+          "token": " can",
+          "base_enc": 1,
+          "byte_enc": 13,
+          "base_msg": -1,
+          "byte_msg": -1,
+          "byte_id": 20
+        },
+        {
+          "token": " read",
+          "base_enc": 1,
+          "byte_enc": 13,
+          "base_msg": -1,
+          "byte_msg": -1,
+          "byte_id": 20
+        },
+        {
+          "token": " the",
+          "base_enc": 0,
+          "byte_enc": 13,
+          "base_msg": -1,
+          "byte_msg": -1,
+          "byte_id": 20
+        },
+        {
+          "token": " original",
+          "base_enc": 1,
+          "byte_enc": 13,
+          "base_msg": -1,
+          "byte_msg": -1,
+          "byte_id": 20
+        },
+        {
+          "token": " post",
+          "base_enc": 1,
+          "byte_enc": 205,
+          "base_msg": -1,
+          "byte_msg": -1,
+          "byte_id": 21
+        },
+        {
+          "token": " at",
+          "base_enc": 1,
+          "byte_enc": 205,
+          "base_msg": -1,
+          "byte_msg": -1,
+          "byte_id": 21
+        },
+        {
+          "token": ":",
+          "base_enc": 0,
+          "byte_enc": 205,
+          "base_msg": -1,
+          "byte_msg": -1,
+          "byte_id": 21
+        },
+        {
+          "token": " http",
+          "base_enc": 0,
+          "byte_enc": 205,
+          "base_msg": -1,
+          "byte_msg": -1,
+          "byte_id": 21
+        },
+        {
+          "token": "://",
+          "base_enc": 1,
+          "byte_enc": 205,
+          "base_msg": -1,
+          "byte_msg": -1,
+          "byte_id": 21
+        },
+        {
+          "token": "my",
+          "base_enc": 1,
+          "byte_enc": 205,
+          "base_msg": -1,
+          "byte_msg": -1,
+          "byte_id": 21
+        },
+        {
+          "token": ".",
+          "base_enc": 0,
+          "byte_enc": 205,
+          "base_msg": -1,
+          "byte_msg": -1,
+          "byte_id": 21
+        },
+        {
+          "token": "reddit",
+          "base_enc": 1,
+          "byte_enc": 205,
+          "base_msg": -1,
+          "byte_msg": -1,
+          "byte_id": 21
+        },
+        {
+          "token": ".",
+          "base_enc": 0,
+          "byte_enc": 44,
+          "base_msg": -1,
+          "byte_msg": -1,
+          "byte_id": 22
+        },
+        {
+          "token": "com",
+          "base_enc": 0,
+          "byte_enc": 44,
+          "base_msg": -1,
+          "byte_msg": -1,
+          "byte_id": 22
+        },
+        {
+          "token": "/",
+          "base_enc": 1,
+          "byte_enc": 44,
+          "base_msg": -1,
+          "byte_msg": -1,
+          "byte_id": 22
+        },
+        {
+          "token": "message",
+          "base_enc": 0,
+          "byte_enc": 44,
+          "base_msg": -1,
+          "byte_msg": -1,
+          "byte_id": 22
+        },
+        {
+          "token": "/",
+          "base_enc": 1,
+          "byte_enc": 44,
+          "base_msg": -1,
+          "byte_msg": -1,
+          "byte_id": 22
+        },
+        {
+          "token": "comments",
+          "base_enc": 1,
+          "byte_enc": 44,
+          "base_msg": -1,
+          "byte_msg": -1,
+          "byte_id": 22
+        },
+        {
+          "token": "/",
+          "base_enc": 0,
+          "byte_enc": 44,
+          "base_msg": -1,
+          "byte_msg": -1,
+          "byte_id": 22
+        },
+        {
+          "token": "1",
+          "base_enc": 0,
+          "byte_enc": 44,
+          "base_msg": -1,
+          "byte_msg": -1,
+          "byte_id": 22
+        },
+        {
+          "token": "u",
+          "base_enc": 0,
+          "byte_enc": 108,
+          "base_msg": -1,
+          "byte_msg": -1,
+          "byte_id": 23
+        },
+        {
+          "token": "7",
+          "base_enc": 1,
+          "byte_enc": 108,
+          "base_msg": -1,
+          "byte_msg": -1,
+          "byte_id": 23
+        },
+        {
+          "token": "j",
+          "base_enc": 1,
+          "byte_enc": 108,
+          "base_msg": -1,
+          "byte_msg": -1,
+          "byte_id": 23
+        },
+        {
+          "token": "3",
+          "base_enc": 0,
+          "byte_enc": 108,
+          "base_msg": -1,
+          "byte_msg": -1,
+          "byte_id": 23
+        },
+        {
+          "token": "p",
+          "base_enc": 1,
+          "byte_enc": 108,
+          "base_msg": -1,
+          "byte_msg": -1,
+          "byte_id": 23
+        },
+        {
+          "token": "/",
+          "base_enc": 1,
+          "byte_enc": 108,
+          "base_msg": -1,
+          "byte_msg": -1,
+          "byte_id": 23
+        },
+        {
+          "token": "this",
+          "base_enc": 0,
+          "byte_enc": 108,
+          "base_msg": -1,
+          "byte_msg": -1,
+          "byte_id": 23
+        },
+        {
+          "token": "_",
+          "base_enc": 0,
+          "byte_enc": 108,
+          "base_msg": -1,
+          "byte_msg": -1,
+          "byte_id": 23
+        },
+        {
+          "token": "is",
+          "base_enc": 1,
+          "byte_enc": 164,
+          "base_msg": -1,
+          "byte_msg": -1,
+          "byte_id": 24
+        },
+        {
+          "token": "_",
+          "base_enc": 0,
+          "byte_enc": 164,
+          "base_msg": -1,
+          "byte_msg": -1,
+          "byte_id": 24
+        },
+        {
+          "token": "what",
+          "base_enc": 1,
+          "byte_enc": 164,
+          "base_msg": -1,
+          "byte_msg": -1,
+          "byte_id": 24
+        },
+        {
+          "token": "_",
+          "base_enc": 0,
+          "byte_enc": 164,
+          "base_msg": -1,
+          "byte_msg": -1,
+          "byte_id": 24
+        },
+        {
+          "token": "i",
+          "base_enc": 0,
+          "byte_enc": 164,
+          "base_msg": -1,
+          "byte_msg": -1,
+          "byte_id": 24
+        },
+        {
+          "token": "_",
+          "base_enc": 1,
+          "byte_enc": 164,
+          "base_msg": -1,
+          "byte_msg": -1,
+          "byte_id": 24
+        },
+        {
+          "token": "w",
+          "base_enc": 0,
+          "byte_enc": 164,
+          "base_msg": -1,
+          "byte_msg": -1,
+          "byte_id": 24
+        },
+        {
+          "token": "anted",
+          "base_enc": 0,
+          "byte_enc": 164,
+          "base_msg": -1,
+          "byte_msg": -1,
+          "byte_id": 24
+        },
+        {
+          "token": "_",
+          "base_enc": 0,
+          "byte_enc": 0,
+          "base_msg": -1,
+          "byte_msg": -1,
+          "byte_id": 25
+        },
+        {
+          "token": "to",
+          "base_enc": 0,
+          "byte_enc": 0,
+          "base_msg": -1,
+          "byte_msg": -1,
+          "byte_id": 25
+        },
+        {
+          "token": "/",
+          "base_enc": 0,
+          "byte_enc": 0,
+          "base_msg": -1,
+          "byte_msg": -1,
+          "byte_id": 25
+        }
+      ]
+    }
+  },
+  "configs": {
+    "response": {
+      "default": {
+        "encrypt": {
+          "gen_model": "gpt2",
+          "start_pos": 0,
+          "delta": 10,
+          "msg_base": 2,
+          "seed_scheme": "sha_left_hash",
+          "window_length": 1,
+          "private_key": 0,
+          "max_new_tokens_ratio": 2,
+          "num_beams": 4,
+          "repetition_penalty": 1
+        },
+        "decrypt": {
+          "gen_model": "gpt2",
+          "msg_base": 2,
+          "seed_scheme": "sha_left_hash",
+          "window_length": 1,
+          "private_key": 0
+        }
+      },
+      "seed_schemes": ["dummy_hash", "sha_left_hash"],
+      "models": [
+        "gpt2",
+        "gpt2_medium",
+        "gpt2_large",
+        "gpt2_xl",
+        "llama_3_8b_intruct",
+        "opt_125m",
+        "opt_1.3b",
+        "opt_2.7b",
+        "opt_6.7b",
+        "opt_13b"
+      ]
+    }
+  }
+}

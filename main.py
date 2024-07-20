@@ -25,9 +25,9 @@ def create_args():
     )
     # Stenography params
     parser.add_argument(
-        "--gamma",
+        "--delta",
         type=float,
-        default=GlobalConfig.get("encrypt.default", "gamma"),
+        default=GlobalConfig.get("encrypt.default", "delta"),
         help="Bias added to scores of tokens in valid list",
     )
     parser.add_argument(
@@ -162,7 +162,7 @@ def main(args):
         print("- " * (os.get_terminal_size().columns // 2))
         print(args.msg)
         print("- " * (os.get_terminal_size().columns // 2))
-        print(f"  Gamma: {args.gamma}")
+        print(f"  delta: {args.delta}")
         print(f"  Message Base: {args.msg_base}")
         print(f"  Seed Scheme: {args.seed_scheme}")
         print(f"  Window Length: {args.window_length}")
@@ -177,7 +177,7 @@ def main(args):
             prompt=args.prompt,
             msg=args.msg,
             start_pos_p=args.start_pos,
-            gamma=args.gamma,
+            delta=args.delta,
             msg_base=args.msg_base,
             seed_scheme=args.seed_scheme,
             window_length=args.window_length,
