@@ -104,7 +104,7 @@ class EncryptorLogitsProcessor(LogitsProcessor, BaseProcessor):
         self,
         prompt_ids: torch.Tensor,
         msg: bytes,
-        gamma: float,
+        delta: float,
         tokenizer,
         start_pos: int = 0,
         *args,
@@ -113,7 +113,7 @@ class EncryptorLogitsProcessor(LogitsProcessor, BaseProcessor):
         """
         Args:
             msg: message to hide in the text.
-            gamma: bias add to scores of token in valid list.
+            delta: bias add to scores of token in valid list.
         """
         super().__init__(*args, **kwargs)
         if prompt_ids.size(0) != 1:
@@ -126,7 +126,7 @@ class EncryptorLogitsProcessor(LogitsProcessor, BaseProcessor):
 
         self.raw_msg = msg
         self.msg = bytes_to_base(msg, self.msg_base)
-        self.gamma = gamma
+        self.delta = delta
         self.tokenizer = tokenizer
         special_tokens = [
             tokenizer.bos_token_id,
@@ -158,13 +158,13 @@ class EncryptorLogitsProcessor(LogitsProcessor, BaseProcessor):
         self, input_ids: torch.Tensor, scores: torch.Tensor, value: int
     ):
         """
-        Add the bias (gamma) to the valid list tokens
+        Add the bias (delta) to the valid list tokens
         """
         ids = torch.cat(
             [self._get_valid_list_ids(input_ids, value), self.special_tokens]
         )
 
-        scores[ids] = scores[ids] + self.gamma
+        scores[ids] = scores[ids] + self.delta
         return scores
 
     def get_message_len(self):

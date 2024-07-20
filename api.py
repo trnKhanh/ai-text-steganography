@@ -25,7 +25,7 @@ async def encrypt_api(
         prompt=body.prompt,
         msg=str.encode(body.msg),
         start_pos_p=[body.start_pos],
-        gamma=body.gamma,
+        delta=body.delta,
         msg_base=body.msg_base,
         seed_scheme=body.seed_scheme,
         window_length=body.window_length,
@@ -64,7 +64,7 @@ async def default_config():
             "encrypt": {
                 "gen_model": GlobalConfig.get("encrypt.default", "gen_model"),
                 "start_pos": GlobalConfig.get("encrypt.default", "start_pos"),
-                "gamma": GlobalConfig.get("encrypt.default", "gamma"),
+                "delta": GlobalConfig.get("encrypt.default", "delta"),
                 "msg_base": GlobalConfig.get("encrypt.default", "msg_base"),
                 "seed_scheme": GlobalConfig.get(
                     "encrypt.default", "seed_scheme"

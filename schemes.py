@@ -1,34 +1,88 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from global_config import GlobalConfig
+from model_factory import ModelFactory
+from seed_scheme_factory import SeedSchemeFactory
+from typing import Literal
 
 
 class EncryptionBody(BaseModel):
-    prompt: str
-    msg: str
-    gen_model: str = GlobalConfig.get("encrypt.default", "gen_model")
-    start_pos: int = GlobalConfig.get("encrypt.default", "start_pos")
-
-    gamma: float = GlobalConfig.get("encrypt.default", "gamma")
-    msg_base: int = GlobalConfig.get("encrypt.default", "msg_base")
-
-    seed_scheme: str = GlobalConfig.get("encrypt.default", "seed_scheme")
-    window_length: int = GlobalConfig.get(
-        "encrypt.default", "window_length"
+    prompt: str = Field(title="Prompt used to generate text")
+    msg: str = Field(title="Message wanted to hide")
+    gen_model: Literal[tuple(ModelFactory.get_models_names())] = Field(
+        default=GlobalConfig.get("encrypt.default", "gen_model"),
+        title="LLM used to generate text",
     )
-    private_key: int = GlobalConfig.get("encrypt.default", "private_key")
-    max_new_tokens_ratio: float = GlobalConfig.get(
-        "encrypt.default", "max_new_tokens_ratio"
+    start_pos: int = Field(
+        default=GlobalConfig.get("encrypt.default", "start_pos"),
+        title="Start position to encrypt the message",
+        ge=0,
     )
-    num_beams: int = GlobalConfig.get("encrypt.default", "num_beams")
-    repetition_penalty: float = GlobalConfig.get('encrypt.default', "repetition_penalty")
+
+    delta: float = Field(
+        default=GlobalConfig.get("encrypt.default", "delta"),
+        title="Hardness parameters",
+        gt=0,
+    )
+    msg_base: int = Field(
+        default=GlobalConfig.get("encrypt.default", "msg_base"),
+        title="Base of message used in base-encoding",
+        ge=2,
+    )
+
+    seed_scheme: Literal[tuple(SeedSchemeFactory.get_schemes_name())] = Field(
+        default=GlobalConfig.get("encrypt.default", "seed_scheme"),
+        title="Scheme used to compute seed for PRF",
+    )
+    window_length: int = Field(
+        default=GlobalConfig.get("encrypt.default", "window_length"),
+        title="Window length (context size) used to compute the seed for PRF",
+        ge=1,
+    )
+    private_key: int = Field(
+        default=GlobalConfig.get("encrypt.default", "private_key"),
+        title="Private key used to compute the seed for PRF",
+        ge=0,
+    )
+    max_new_tokens_ratio: float = Field(
+        default=GlobalConfig.get("encrypt.default", "max_new_tokens_ratio"),
+        title="Max length of generated text compared to the minimum length required to hide the message",
+        ge=1,
+    )
+    num_beams: int = Field(
+        default=GlobalConfig.get("encrypt.default", "num_beams"),
+        title="Number of beams used in beam search",
+        ge=1,
+    )
+
+    repetition_penalty: float = Field(
+        default=GlobalConfig.get("encrypt.default", "repetition_penalty"),
+        title="Penalty used to avoid repetition when sampling tokens",
+        ge=1,
+    )
+
 
 class DecryptionBody(BaseModel):
-    text: str
-    gen_model: str = GlobalConfig.get("decrypt.default", "gen_model")
-    msg_base: int = GlobalConfig.get("decrypt.default", "msg_base")
-
-    seed_scheme: str = GlobalConfig.get("decrypt.default", "seed_scheme")
-    window_length: int = GlobalConfig.get(
-        "decrypt.default", "window_length"
+    text: str = Field(title="Text containing the message")
+    gen_model: Literal[tuple(ModelFactory.get_models_names())] = Field(
+        default=GlobalConfig.get("decrypt.default", "gen_model"),
+        title="LLM used to generate text",
     )
-    private_key: int = GlobalConfig.get("decrypt.default", "private_key")
+    msg_base: int = Field(
+        default=GlobalConfig.get("decrypt.default", "msg_base"),
+        title="Base of message used in base-encoding",
+        ge=2,
+    )
+    seed_scheme: Literal[tuple(SeedSchemeFactory.get_schemes_name())] = Field(
+        default=GlobalConfig.get("decrypt.default", "seed_scheme"),
+        title="Scheme used to compute seed for PRF",
+    )
+    window_length: int = Field(
+        default=GlobalConfig.get("decrypt.default", "window_length"),
+        title="Window length (context size) used to compute the seed for PRF",
+        ge=1,
+    )
+    private_key: int = Field(
+        default=GlobalConfig.get("decrypt.default", "private_key"),
+        title="Private key used to compute the seed for PRF",
+        ge=0,
+    )
