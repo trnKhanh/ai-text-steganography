@@ -85,6 +85,7 @@ def generate(
         do_sample=True,
         num_beams=num_beams,
         repetition_penalty=float(repetition_penalty),
+        pad_token_id=tokenizer.eos_token_id,
     )
 
     output_tokens = output_tokens[:, prompt_size:]

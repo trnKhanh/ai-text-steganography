@@ -3,6 +3,7 @@ import json
 import base64
 from argparse import ArgumentParser
 
+from tqdm import tqdm
 import numpy as np
 from matplotlib import pyplot as plt
 
@@ -33,7 +34,7 @@ def load_msgs(msg_lens: list[int], file: str | None = None):
     c4_en = load_dataset("allenai/c4", "en", split="validation", streaming=True)
     iterator = iter(c4_en)
 
-    for length in msg_lens:
+    for length in tqdm(msg_lens, desc="Loading messages"):
         random_msg = torch.randint(256, (length,), generator=rng)
         base64_msg = base64.b64encode(bytes(random_msg.tolist())).decode(
             "ascii"
@@ -48,7 +49,7 @@ def load_msgs(msg_lens: list[int], file: str | None = None):
     return msgs
 
 
-def load_prompts(n: int, min_length: int, file: str | None = None):
+def load_prompts(n: int, prompt_size: int, file: str | None = None):
     prompts = None
     if file is not None and os.path.isfile(file):
         with open(file, "r") as f:
@@ -60,11 +61,13 @@ def load_prompts(n: int, min_length: int, file: str | None = None):
     c4_en = load_dataset("allenai/c4", "en", split="train", streaming=True)
     iterator = iter(c4_en)
 
-    while len(prompts) < n:
-        text = next(iterator)["text"]
-        if len(text) < min_length:
-            continue
-        prompts.append(text)
+    with tqdm(total=n, desc="Loading prompts") as pbar:
+        while len(prompts) < n:
+            text = next(iterator)["text"]
+            if len(text) < prompt_size:
+                continue
+            prompts.append(text)
+            pbar.update()
 
     return prompts
 
@@ -80,7 +83,7 @@ def create_args():
         "--msgs-lengths",
         nargs=3,
         type=int,
-        help="Range of messages' lengths. This is parsed in form: <start> <end> <step>",
+        help="Range of messages' lengths. This is parsed in form: <start> <end> <num>",
     )
     parser.add_argument(
         "--msgs-per-length",
@@ -105,13 +108,7 @@ def create_args():
         "--prompt-size",
         type=int,
         default=50,
-        help="Size of prompts",
-    )
-    parser.add_argument(
-        "--prompts-min-length",
-        type=int,
-        default=100,
-        help="Min length of prompts",
+        help="Size of prompts (in tokens)",
     )
     # Others
     parser.add_argument(
@@ -131,13 +128,13 @@ def create_args():
         "--deltas",
         nargs=3,
         type=float,
-        help="Range of delta. This is parsed in form: <start> <end> <step>",
+        help="Range of delta. This is parsed in form: <start> <end> <num>",
     )
     parser.add_argument(
         "--bases",
-        nargs=3,
+        nargs="+",
         type=int,
-        help="Range of base. This is parsed in form: <start> <end> <step>",
+        help="Bases used in base encoding",
     )
     parser.add_argument(
         "--judge-model",
@@ -177,54 +174,59 @@ def create_args():
 def get_results(args, prompts, msgs):
     model, tokenizer = ModelFactory.load_model(args.gen_model)
     results = []
+    total_gen = (
+        len(prompts)
+        * int(args.deltas[2])
+        * len(args.bases)
+        * args.repeat
+        * sum([len(msgs[k]) for k in msgs])
+    )
 
-    for prompt in prompts[:1]:
-        for delta in np.arange(
-            args.deltas[0], args.deltas[1] + args.deltas[2], args.deltas[2]
-        ):
-            for base in np.arange(
-                args.bases[0],
-                args.bases[1] + args.bases[2],
-                args.bases[2],
-                dtype=np.int32,
+    with tqdm(total=total_gen, desc="Generating") as pbar:
+        for prompt in prompts:
+            for delta in np.linspace(
+                args.deltas[0], args.deltas[1], int(args.deltas[2])
             ):
-                for k in msgs:
-                    msg_type = k
-                    for msg in msgs[k]:
-                        msg_bytes = (
-                            msg.encode("ascii")
-                            if k == "readable"
-                            else base64.b64decode(msg)
-                        )
-                        for _ in range(args.repeat):
-                            text, msg_rate, tokens_info = generate(
-                                tokenizer=tokenizer,
-                                model=model,
-                                prompt=prompt,
-                                msg=msg_bytes,
-                                start_pos_p=[0],
-                                delta=delta,
-                                msg_base=base,
-                                seed_scheme="sha_left_hash",
-                                window_length=1,
-                                private_key=0,
-                                min_new_tokens_ratio=1,
-                                max_new_tokens_ratio=2,
-                                num_beams=4,
-                                repetition_penalty=1.5,
-                                prompt_size=args.prompt_size,
+                for base in args.bases:
+                    for k in msgs:
+                        msg_type = k
+                        for msg in msgs[k]:
+                            msg_bytes = (
+                                msg.encode("ascii")
+                                if k == "readable"
+                                else base64.b64decode(msg)
                             )
-                            results.append(
-                                {
-                                    "msg_type": msg_type,
-                                    "delta": delta.item(),
-                                    "base": base.item(),
-                                    "perplexity": ModelFactory.compute_perplexity(
-                                        args.judge_model, text
-                                    ),
-                                    "msg_rate": msg_rate,
-                                }
-                            )
+                            for _ in range(args.repeat):
+                                text, msg_rate, tokens_info = generate(
+                                    tokenizer=tokenizer,
+                                    model=model,
+                                    prompt=prompt,
+                                    msg=msg_bytes,
+                                    start_pos_p=[0],
+                                    delta=delta,
+                                    msg_base=base,
+                                    seed_scheme="sha_left_hash",
+                                    window_length=1,
+                                    private_key=0,
+                                    min_new_tokens_ratio=1,
+                                    max_new_tokens_ratio=2,
+                                    num_beams=4,
+                                    repetition_penalty=1.5,
+                                    prompt_size=args.prompt_size,
+                                )
+                                results.append(
+                                    {
+                                        "msg_type": msg_type,
+                                        "delta": delta.item(),
+                                        "base": base,
+                                        "perplexity": ModelFactory.compute_perplexity(
+                                            args.judge_model, text
+                                        ),
+                                        "msg_rate": msg_rate,
+                                        "msg_len": len(msg_bytes),
+                                    }
+                                )
+                                pbar.update()
     return results
 
 
@@ -300,9 +302,15 @@ def process_results(results, save_dir):
                 delta_set.add(k[1])
     for metric in data:
         for msg_type in data[metric]:
-            bases[metric][msg_type] = np.array(bases[metric][msg_type], dtype=np.int32)
-            deltas[metric][msg_type] = np.array(deltas[metric][msg_type], dtype=np.int32)
-            values[metric][msg_type] = np.array(values[metric][msg_type], dtype=np.float32)
+            bases[metric][msg_type] = np.array(
+                bases[metric][msg_type], dtype=np.int32
+            )
+            deltas[metric][msg_type] = np.array(
+                deltas[metric][msg_type], dtype=np.int32
+            )
+            values[metric][msg_type] = np.array(
+                values[metric][msg_type], dtype=np.float32
+            )
 
     os.makedirs(save_dir, exist_ok=True)
     for metric in data:
@@ -318,6 +326,7 @@ def process_results(results, save_dir):
                 os.path.join(save_dir, f"{metric}_{msg_type}_scatter.pdf"),
                 bbox_inches="tight",
             )
+            plt.close(fig)
 
     os.makedirs(os.path.join(save_dir, "delta_effect"), exist_ok=True)
     for metric in data:
@@ -331,9 +340,14 @@ def process_results(results, save_dir):
                     values[metric][msg_type][mask],
                 )
                 plt.savefig(
-                    os.path.join(save_dir, f"delta_effect/{metric}_{msg_type}_base{base_value}.pdf"),
+                    os.path.join(
+                        save_dir,
+                        f"delta_effect/{metric}_{msg_type}_base{base_value}.pdf",
+                    ),
                     bbox_inches="tight",
                 )
+                plt.close(fig)
+
     os.makedirs(os.path.join(save_dir, "base_effect"), exist_ok=True)
     for metric in data:
         for msg_type in data[metric]:
@@ -346,23 +360,27 @@ def process_results(results, save_dir):
                     values[metric][msg_type][mask],
                 )
                 plt.savefig(
-                    os.path.join(save_dir, f"base_effect/{metric}_{msg_type}_delta{delta_value}.pdf"),
+                    os.path.join(
+                        save_dir,
+                        f"base_effect/{metric}_{msg_type}_delta{delta_value}.pdf",
+                    ),
                     bbox_inches="tight",
                 )
+                plt.close(fig)
 
 
 def main(args):
     prompts = load_prompts(
         args.num_prompts,
-        args.prompts_min_length,
+        args.prompt_size,
         args.prompts_file if not args.overwrite else None,
     )
 
     msgs_lens = []
-    for i in np.arange(
+    for i in np.linspace(
         args.msgs_lengths[0],
-        args.msgs_lengths[1] + args.msgs_lengths[2],
-        args.msgs_lengths[2],
+        args.msgs_lengths[1],
+        int(args.msgs_lengths[2]),
         dtype=np.int32,
     ):
         for _ in range(args.msgs_per_length):
@@ -400,7 +418,6 @@ def main(args):
 
     if args.figs_dir:
         process_results(results, args.figs_dir)
-
 
 
 if __name__ == "__main__":
