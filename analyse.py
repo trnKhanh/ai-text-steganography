@@ -229,12 +229,29 @@ def get_results(args, prompts, msgs):
                                         "msg_len": len(msg_bytes),
                                     }
                                 )
-                                if (len(results) + 1) % args.results_save_freq == 0:
+                                pbar.set_postfix(
+                                    {
+                                        "perplexity": results[-1]["perplexity"],
+                                        "msg_rate": results[-1]["msg_rate"],
+                                    }
+                                )
+                                if (
+                                    len(results) + 1
+                                ) % args.results_save_freq == 0:
                                     if args.results_save_file:
-                                        os.makedirs(os.path.dirname(args.results_save_file), exist_ok=True)
-                                        with open(args.results_save_file, "w") as f:
+                                        os.makedirs(
+                                            os.path.dirname(
+                                                args.results_save_file
+                                            ),
+                                            exist_ok=True,
+                                        )
+                                        with open(
+                                            args.results_save_file, "w"
+                                        ) as f:
                                             json.dump(results, f)
-                                        print(f"Saved results to {args.results_save_file}")
+                                        print(
+                                            f"Saved results to {args.results_save_file}"
+                                        )
 
                                 pbar.update()
     return results
