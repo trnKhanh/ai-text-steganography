@@ -184,6 +184,8 @@ class EncryptorLogitsProcessor(LogitsProcessor, BaseProcessor):
             byte_enc_msg[i] = byte_arr[(i - start) // values_per_byte]
 
         for i, b in enumerate(self.msg):
+            if i + self.start_pos >= len(base_msg):
+                break
             base_msg[i + self.start_pos] = b
             byte_msg[i + self.start_pos] = self.raw_msg[i // values_per_byte]
 
