@@ -190,19 +190,19 @@ def get_results(args, prompts, msgs):
     )
 
     with tqdm(total=total_gen, desc="Generating") as pbar:
-        for prompt in prompts:
-            for delta in np.linspace(
-                args.deltas[0], args.deltas[1], int(args.deltas[2])
-            ):
+        for k in msgs:
+            msg_type = k
+            for msg in msgs[k]:
+                msg_bytes = (
+                    msg.encode("ascii")
+                    if k == "readable"
+                    else base64.b64decode(msg)
+                )
                 for base in args.bases:
-                    for k in msgs:
-                        msg_type = k
-                        for msg in msgs[k]:
-                            msg_bytes = (
-                                msg.encode("ascii")
-                                if k == "readable"
-                                else base64.b64decode(msg)
-                            )
+                    for delta in np.linspace(
+                        args.deltas[0], args.deltas[1], int(args.deltas[2])
+                    ):
+                        for prompt in prompts:
                             for _ in range(args.repeat):
                                 text, msg_rate, tokens_info = generate(
                                     tokenizer=tokenizer,
@@ -238,6 +238,8 @@ def get_results(args, prompts, msgs):
                                         "perplexity": results[-1]["perplexity"],
                                         "msg_rate": results[-1]["msg_rate"],
                                         "msg_len": len(msg_bytes),
+                                        "delta": delta.item(),
+                                        "base": base,
                                     }
                                 )
                                 if (
