@@ -233,6 +233,7 @@ def get_results(args, prompts, msgs):
                                     {
                                         "perplexity": results[-1]["perplexity"],
                                         "msg_rate": results[-1]["msg_rate"],
+                                        "msg_len": len(msg_bytes),
                                     }
                                 )
                                 if (
