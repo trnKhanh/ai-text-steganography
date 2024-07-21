@@ -51,7 +51,7 @@ def generate(
     if prompt_size == -1:
         prompt_size = tokenized_input.input_ids.size(1)
     logits_processor = EncryptorLogitsProcessor(
-        prompt_ids=tokenized_input.input_ids[:prompt_size],
+        prompt_ids=tokenized_input.input_ids[:, :prompt_size],
         msg=msg,
         start_pos=start_pos,
         delta=delta,
