@@ -162,6 +162,9 @@ def create_args():
         help="Where to save results",
     )
     parser.add_argument(
+        "--results-save-freq", type=int, default=100, help="Save frequency"
+    )
+    parser.add_argument(
         "--figs-dir",
         type=str,
         default=None,
@@ -226,6 +229,13 @@ def get_results(args, prompts, msgs):
                                         "msg_len": len(msg_bytes),
                                     }
                                 )
+                                if (len(results) + 1) % args.results_save_freq == 0:
+                                    if args.results_save_file:
+                                        os.makedirs(os.path.dirname(args.results_save_file), exist_ok=True)
+                                        with open(args.results_save_file, "w") as f:
+                                            json.dump(results, f)
+                                        print(f"Saved results to {args.results_save_file}")
+
                                 pbar.update()
     return results
 
