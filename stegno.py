@@ -18,9 +18,11 @@ def generate(
     window_length: int = 1,
     salt_key: Union[int, None] = None,
     private_key: Union[int, None] = None,
+    min_new_tokens_ratio: float = 1,
     max_new_tokens_ratio: float = 2,
     num_beams: int = 4,
     repetition_penalty: float = 1.0,
+    prompt_size: int = -1,
 ):
     """
     Generate the sequence containing the hidden data.
@@ -36,7 +38,6 @@ def generate(
         window_length: length of window to compute the seed.
         salt_key: salt to add to the seed.
         private_key: private key used to compute the seed.
-
     """
     if len(start_pos_p) == 1:
         start_pos = start_pos_p[0]
@@ -47,9 +48,10 @@ def generate(
     start_pos = int(start_pos) + window_length
 
     tokenized_input = tokenizer(prompt, return_tensors="pt").to(model.device)
-    prompt_size = tokenized_input.input_ids.size(1)
+    if prompt_size == -1:
+        prompt_size = tokenized_input.input_ids.size(1)
     logits_processor = EncryptorLogitsProcessor(
-        prompt_ids=tokenized_input.input_ids,
+        prompt_ids=tokenized_input.input_ids[:prompt_size],
         msg=msg,
         start_pos=start_pos,
         delta=delta,
@@ -62,14 +64,21 @@ def generate(
         salt_key=salt_key,
         private_key=private_key,
     )
-    min_length = prompt_size + start_pos + logits_processor.get_message_len()
-    max_length = prompt_size + int(
-        start_pos + logits_processor.get_message_len() * max_new_tokens_ratio
+    min_length = (
+        prompt_size
+        + start_pos
+        + logits_processor.get_message_len() * min_new_tokens_ratio
+    )
+    max_length = (
+        prompt_size
+        + start_pos
+        + logits_processor.get_message_len() * max_new_tokens_ratio
     )
     max_length = min(max_length, tokenizer.model_max_length)
     min_length = min(min_length, max_length)
     output_tokens = model.generate(
-        **tokenized_input,
+        input_ids=tokenized_input.input_ids[:, :prompt_size],
+        attention_mask=tokenized_input.attention_mask[:, :prompt_size],
         logits_processor=transformers.LogitsProcessorList([logits_processor]),
         min_length=min_length,
         max_length=max_length,
@@ -79,10 +88,12 @@ def generate(
     )
 
     output_tokens = output_tokens[:, prompt_size:]
-    output_text = tokenizer.batch_decode(output_tokens, skip_special_tokens=True)[0]
-    output_tokens_post = tokenizer(output_text, return_tensors="pt", add_special_tokens=False).to(
-        model.device
-    )
+    output_text = tokenizer.batch_decode(
+        output_tokens, skip_special_tokens=True
+    )[0]
+    output_tokens_post = tokenizer(
+        output_text, return_tensors="pt", add_special_tokens=False
+    ).to(model.device)
     msg_rates, tokens_infos = logits_processor.validate(
         output_tokens_post.input_ids
     )

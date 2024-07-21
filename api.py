@@ -108,6 +108,9 @@ async def default_config():
                 "private_key": GlobalConfig.get(
                     "encrypt.default", "private_key"
                 ),
+                "min_new_tokens_ratio": GlobalConfig.get(
+                    "encrypt.default", "min_new_tokens_ratio"
+                ),
                 "max_new_tokens_ratio": GlobalConfig.get(
                     "encrypt.default", "max_new_tokens_ratio"
                 ),

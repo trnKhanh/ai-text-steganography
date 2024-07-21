@@ -50,6 +50,11 @@ class EncryptionBody(BaseModel):
         ge=0,
     )
     max_new_tokens_ratio: float = Field(
+        default=GlobalConfig.get("encrypt.default", "min_new_tokens_ratio"),
+        title="Min length of generated text compared to the minimum length required to hide the message",
+        ge=1,
+    )
+    max_new_tokens_ratio: float = Field(
         default=GlobalConfig.get("encrypt.default", "max_new_tokens_ratio"),
         title="Max length of generated text compared to the minimum length required to hide the message",
         ge=1,
