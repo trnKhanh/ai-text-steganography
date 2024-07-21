@@ -41,9 +41,13 @@ def load_msgs(msg_lens: list[int], file: str | None = None):
         )
         msgs["random"].append(base64_msg)
 
-        readable_msg = next(iterator)["text"]
-        while len(readable_msg) < length:
+        while True:
             readable_msg = next(iterator)["text"]
+            try :
+                readable_msg[:length].encode("ascii")
+                break
+            except Exception as e:
+                continue
         msgs["readable"].append(readable_msg[:length])
 
     return msgs
