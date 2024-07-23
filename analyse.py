@@ -285,9 +285,7 @@ def process_results(results, save_dir):
 
         if (base, delta, msg_len) not in data["msg_rates"][msg_type]:
             data["msg_rates"][msg_type][(base, delta, msg_len)] = []
-        data["msg_rates"][msg_type][(base, delta, msg_len)].append(
-            msg_rate
-        )
+        data["msg_rates"][msg_type][(base, delta, msg_len)].append(msg_rate)
 
         if (base, delta, msg_len) not in data["perplexities"][msg_type]:
             data["perplexities"][msg_type][(base, delta, msg_len)] = []
@@ -356,13 +354,17 @@ def process_results(results, save_dir):
     for metric in data:
         for msg_type in data[metric]:
             bases[metric][msg_type] = np.array(
-                bases[metric][msg_type], dtype=np.int32
+                bases[metric][msg_type], dtype=np.int64
             )
             deltas[metric][msg_type] = np.array(
-                deltas[metric][msg_type], dtype=np.int32
+                deltas[metric][msg_type], dtype=np.int64
             )
+            msgs_lens[metric][msg_type] = np.array(
+                msgs_lens[metric][msg_type], dtype=np.int64
+            )
+
             values[metric][msg_type] = np.array(
-                values[metric][msg_type], dtype=np.float32
+                values[metric][msg_type], dtype=np.float64
             )
 
     os.makedirs(save_dir, exist_ok=True)
@@ -386,8 +388,8 @@ def process_results(results, save_dir):
         for msg_type in data[metric]:
             fig = plt.figure(dpi=300)
             for base_value in base_set:
-                deltas_avg = np.array(list(delta_set))
-                values_avg = np.zeros_like(deltas_avg)
+                deltas_avg = np.array(list(sorted(delta_set)))
+                values_avg = np.zeros_like(deltas_avg, dtype=np.float64)
                 for i in range(len(deltas_avg)):
                     mask = (deltas[metric][msg_type] == deltas_avg[i]) & (
                         bases[metric][msg_type] == base_value
@@ -410,8 +412,8 @@ def process_results(results, save_dir):
         for msg_type in data[metric]:
             fig = plt.figure(dpi=300)
             for base_value in base_set:
-                msgs_lens_avg = np.array(list(msgs_lens_set))
-                values_avg = np.zeros_like(msgs_lens_avg)
+                msgs_lens_avg = np.array(sorted(list(msgs_lens_set)))
+                values_avg = np.zeros_like(msgs_lens_avg, dtype=np.float64)
                 for i in range(len(msgs_lens_avg)):
                     mask = (msgs_lens[metric][msg_type] == msgs_lens_avg[i]) & (
                         bases[metric][msg_type] == base_value
@@ -444,7 +446,7 @@ def main(args):
             args.msgs_lengths[0],
             args.msgs_lengths[1],
             int(args.msgs_lengths[2]),
-            dtype=np.int32,
+            dtype=np.int64,
         ):
             for _ in range(args.msgs_per_length):
                 msgs_lens.append(i)
