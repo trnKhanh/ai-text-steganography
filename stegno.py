@@ -48,8 +48,11 @@ def generate(
         ).item()
     start_pos = int(start_pos) + window_length
     tokenizer.pad_token = tokenizer.eos_token
+    tokenizer.padding_side = "left"
 
-    tokenized_input = tokenizer(prompt, return_tensors="pt", truncation=True).to(model.device)
+    tokenized_input = tokenizer(prompt, return_tensors="pt", padding=True).to(
+        model.device
+    )
     prompt_size = tokenized_input.input_ids.size(1)
 
     logits_processor = EncryptorLogitsProcessor(
@@ -89,6 +92,7 @@ def generate(
         pad_token_id=tokenizer.eos_token_id,
         generator=generator,
     )
+    tokenizer.padding_side = "left"
 
     output_tokens = output_tokens[:, prompt_size:]
     output_texts = tokenizer.batch_decode(
@@ -100,6 +104,7 @@ def generate(
         add_special_tokens=False,
         padding=True,
     ).to(model.device)
+
     msg_rates, tokens_infos = logits_processor.validate(
         output_tokens_post.input_ids
     )
