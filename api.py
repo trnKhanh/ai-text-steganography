@@ -34,7 +34,7 @@ async def encrypt_api(
 ):
     byte_msg = base64.b64decode(body.msg)
     model, tokenizer = ModelFactory.load_model(body.gen_model)
-    text, msg_rate, tokens_info = generate(
+    texts, msgs_rates, tokens_infos = generate(
         tokenizer=tokenizer,
         model=model,
         prompt=body.prompt,
@@ -49,7 +49,11 @@ async def encrypt_api(
         num_beams=body.num_beams,
         repetition_penalty=body.repetition_penalty,
     )
-    return {"text": text, "msg_rate": msg_rate, "tokens_info": tokens_info}
+    return {
+        "texts": texts,
+        "msgs_rates": msgs_rates,
+        "tokens_info": tokens_infos,
+    }
 
 
 @app.post(
@@ -114,6 +118,7 @@ async def default_config():
                 "max_new_tokens_ratio": GlobalConfig.get(
                     "encrypt.default", "max_new_tokens_ratio"
                 ),
+                "do_sample": GlobalConfig.get("encrypt.default", "do_sample"),
                 "num_beams": GlobalConfig.get("encrypt.default", "num_beams"),
                 "repetition_penalty": GlobalConfig.get(
                     "encrypt.default", "repetition_penalty"

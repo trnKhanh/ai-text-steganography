@@ -17,12 +17,14 @@ def enc_fn(
     seed_scheme: str,
     window_length: int,
     private_key: int,
+    do_sample: bool,
+    min_new_tokens_ratio: float,
     max_new_tokens_ratio: float,
     num_beams: int,
     repetition_penalty: float,
 ):
     model, tokenizer = ModelFactory.load_model(gen_model)
-    text, msg_rate, tokens_info = generate(
+    texts, msgs_rates, tokens_infos = generate(
         tokenizer=tokenizer,
         model=model,
         prompt=prompt,
@@ -33,12 +35,14 @@ def enc_fn(
         seed_scheme=seed_scheme,
         window_length=window_length,
         private_key=private_key,
+        do_sample=do_sample,
+        min_new_tokens_ratio=min_new_tokens_ratio,
         max_new_tokens_ratio=max_new_tokens_ratio,
         num_beams=num_beams,
         repetition_penalty=repetition_penalty,
     )
     highlight_base = []
-    for token in tokens_info:
+    for token in tokens_infos[0]:
         stat = None
         if token["base_msg"] != -1:
             if token["base_msg"] == token["base_enc"]:
@@ -48,8 +52,8 @@ def enc_fn(
         highlight_base.append((repr(token["token"])[1:-1], stat))
 
     highlight_byte = []
-    for i, token in enumerate(tokens_info):
-        if i == 0 or tokens_info[i - 1]["byte_id"] != token["byte_id"]:
+    for i, token in enumerate(tokens_infos[0]):
+        if i == 0 or tokens_infos[0][i - 1]["byte_id"] != token["byte_id"]:
             stat = None
             if token["byte_msg"] != -1:
                 if token["byte_msg"] == token["byte_enc"]:
@@ -60,7 +64,12 @@ def enc_fn(
         else:
             highlight_byte[-1][0] += repr(token["token"])[1:-1]
 
-    return text, highlight_base, highlight_byte, round(msg_rate * 100, 2)
+    return (
+        texts[0],
+        highlight_base,
+        highlight_byte,
+        round(msgs_rates[0] * 100, 2),
+    )
 
 
 def dec_fn(
@@ -108,13 +117,21 @@ if __name__ == "__main__":
                 int(GlobalConfig.get("encrypt.default", "window_length"))
             ),
             gr.Number(int(GlobalConfig.get("encrypt.default", "private_key"))),
+            gr.Number(bool(GlobalConfig.get("encrypt.default", "do_sample"))),
+            gr.Number(
+                float(
+                    GlobalConfig.get("encrypt.default", "min_new_tokens_ratio")
+                )
+            ),
             gr.Number(
                 float(
                     GlobalConfig.get("encrypt.default", "max_new_tokens_ratio")
                 )
             ),
             gr.Number(int(GlobalConfig.get("encrypt.default", "num_beams"))),
-            gr.Number(float(GlobalConfig.get("encrypt.default", "repetition_penalty"))),
+            gr.Number(
+                float(GlobalConfig.get("encrypt.default", "repetition_penalty"))
+            ),
         ],
         outputs=[
             gr.Textbox(

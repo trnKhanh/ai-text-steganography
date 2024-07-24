@@ -116,10 +116,10 @@ class EncryptorLogitsProcessor(LogitsProcessor, BaseProcessor):
             delta: bias add to scores of token in valid list.
         """
         super().__init__(*args, **kwargs)
-        if prompt_ids.size(0) != 1:
-            raise RuntimeError(
-                "EncryptorLogitsProcessor does not support multiple prompts input."
-            )
+        # if prompt_ids.size(0) != 1:
+        #     raise RuntimeError(
+        #         "EncryptorLogitsProcessor does not support multiple prompts input."
+        #     )
 
         self.prompt_size = prompt_ids.size(1)
         self.start_pos = start_pos
@@ -192,7 +192,7 @@ class EncryptorLogitsProcessor(LogitsProcessor, BaseProcessor):
         return base_msg, byte_msg, base_enc_msg, byte_enc_msg
 
     def validate(self, input_ids_batch: torch.Tensor):
-        res = []
+        msgs_rates = []
         tokens_infos = []
         for input_ids in input_ids_batch:
             # Initialization
@@ -214,7 +214,7 @@ class EncryptorLogitsProcessor(LogitsProcessor, BaseProcessor):
             for i in range(min(len(enc_msg), len(self.raw_msg))):
                 if self.raw_msg[i] == enc_msg[i]:
                     cnt += 1
-            res.append(cnt / len(self.raw_msg))
+            msgs_rates.append(cnt / len(self.raw_msg))
 
             base_msg, byte_msg, base_enc_msg, byte_enc_msg = (
                 self.__map_input_ids(input_ids, base_arr, byte_arr)
@@ -234,7 +234,7 @@ class EncryptorLogitsProcessor(LogitsProcessor, BaseProcessor):
                 )
             tokens_infos.append(tokens)
 
-        return res, tokens_infos
+        return msgs_rates, tokens_infos
 
 
 class DecryptorProcessor(BaseProcessor):

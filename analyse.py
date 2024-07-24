@@ -1,4 +1,6 @@
 import os
+from datetime import datetime
+from copy import deepcopy
 import json
 import base64
 from argparse import ArgumentParser
@@ -16,50 +18,27 @@ rng = torch.Generator(device="cpu")
 rng.manual_seed(0)
 
 
-def load_msgs(msg_lens: list[int], file: str | None = None):
-    msgs = None
-    if file is not None and os.path.isfile(file):
-        with open(file, "r") as f:
-            msgs = json.load(f)
-        if "readable" not in msgs and "random" not in msgs:
-            msgs = None
-        else:
-            return msgs
-
-    msgs = {
-        "readable": [],
-        "random": [],
-    }
-
+def load_msgs(msg_lens: list[int]):
+    msgs = []
     c4_en = load_dataset("allenai/c4", "en", split="validation", streaming=True)
     iterator = iter(c4_en)
 
     for length in tqdm(msg_lens, desc="Loading messages"):
         random_msg = torch.randint(256, (length,), generator=rng)
-        base64_msg = base64.b64encode(bytes(random_msg.tolist())).decode(
-            "ascii"
-        )
-        msgs["random"].append(base64_msg)
+        msgs.append(["random", bytes(random_msg.tolist())])
 
         while True:
             readable_msg = next(iterator)["text"]
             try:
-                readable_msg[:length].encode("ascii")
+                msgs.append(["readable", readable_msg[:length].encode("ascii")])
                 break
             except Exception as e:
                 continue
-        msgs["readable"].append(readable_msg[:length])
 
     return msgs
 
 
-def load_prompts(n: int, prompt_size: int, file: str | None = None):
-    prompts = None
-    if file is not None and os.path.isfile(file):
-        with open(file, "r") as f:
-            prompts = json.load(f)
-        return prompts
-
+def load_prompts(tokenizer, n: int, prompt_size: int):
     prompts = []
 
     c4_en = load_dataset("allenai/c4", "en", split="train", streaming=True)
@@ -68,12 +47,324 @@ def load_prompts(n: int, prompt_size: int, file: str | None = None):
     with tqdm(total=n, desc="Loading prompts") as pbar:
         while len(prompts) < n:
             text = next(iterator)["text"]
-            if len(text) < prompt_size:
+            input_ids = tokenizer.encode(text, return_tensors="pt")
+            if input_ids.size(1) < prompt_size:
                 continue
-            prompts.append(text)
+            truncated_text = tokenizer.batch_decode(input_ids[:, :prompt_size])[
+                0
+            ]
+            prompts.append(truncated_text)
             pbar.update()
 
     return prompts
+
+
+class AnalyseProcessor(object):
+    params_names = [
+        "msgs",
+        "bases",
+        "deltas",
+    ]
+
+    def __init__(
+        self,
+        save_file: str,
+        save_freq: int | None = None,
+        gen_model: str | None = None,
+        judge_model: str | None = None,
+        msgs: list[bytes] | None = None,
+        bases: list[int] | None = None,
+        deltas: list[float] | None = None,
+        prompts: list[str] | None = None,
+        repeat: int = 1,
+        gen_params: dict | None = None,
+        batch_size: int = 1,
+    ):
+        self.save_file = save_file
+        self.save_freq = save_freq
+        self.data = {
+            "params": {
+                "gen_model": gen_model,
+                "judge_model": judge_model,
+                "ptrs": {
+                    "msgs": 0,
+                    "bases": 0,
+                    "deltas": 0,
+                },
+                "values": {
+                    "msgs": msgs,
+                    "bases": bases,
+                    "deltas": deltas,
+                },
+                "prompts": prompts,
+                "batch_size": batch_size,
+                "repeat": repeat,
+                "gen": gen_params,
+            },
+            "results": [],
+        }
+        self.__pbar = None
+        self.last_saved = None
+        self.skip_first = False
+
+    def run(self, depth=0):
+        if self.__pbar is None:
+            total = 1
+            for v in self.data["params"]["values"].keys():
+                if v is None:
+                    raise RuntimeError(f"values must not be None when running")
+
+            initial = 0
+            for param_name in self.params_names[::-1]:
+                initial += total * self.data["params"]["ptrs"][param_name]
+                total *= len(self.data["params"]["values"][param_name])
+
+            if self.skip_first:
+                initial += 1
+
+            self.__pbar = tqdm(
+                desc="Generating",
+                total=total,
+                initial=initial,
+            )
+
+        if depth < len(self.params_names):
+            param_name = self.params_names[depth]
+
+            while self.data["params"]["ptrs"][param_name] < len(
+                self.data["params"]["values"][param_name]
+            ):
+                self.run(depth + 1)
+                self.data["params"]["ptrs"][param_name] = (
+                    self.data["params"]["ptrs"][param_name] + 1
+                )
+
+            self.data["params"]["ptrs"][param_name] = 0
+            if depth == 0:
+                self.save_data(self.save_file)
+        else:
+            if self.skip_first:
+                self.skip_first = False
+                return
+            prompts = self.data["params"]["prompts"]
+
+            msg_ptr = self.data["params"]["ptrs"]["msgs"]
+            msg_type, msg = self.data["params"]["values"]["msgs"][msg_ptr]
+
+            base_ptr = self.data["params"]["ptrs"]["bases"]
+            base = self.data["params"]["values"]["bases"][base_ptr]
+
+            delta_ptr = self.data["params"]["ptrs"]["deltas"]
+            delta = self.data["params"]["values"]["deltas"][delta_ptr]
+
+            model, tokenizer = ModelFactory.load_model(
+                self.data["params"]["gen_model"]
+            )
+            l = 0
+            while l < len(prompts):
+                start = datetime.now()
+                r = l + self.data["params"]["batch_size"]
+                r = min(r, len(prompts))
+
+                texts, msgs_rates, _ = generate(
+                    model=model,
+                    tokenizer=tokenizer,
+                    prompt=prompts[l:r],
+                    msg=msg,
+                    msg_base=base,
+                    delta=delta,
+                    **self.data["params"]["gen"],
+                )
+                end = datetime.now()
+                for i in range(len(texts)):
+                    prompt_ptr = l + i
+                    text = texts[i]
+                    msg_rate = msgs_rates[i]
+                    self.data["results"].append(
+                        {
+                            "ptrs": {
+                                "prompts": prompt_ptr,
+                                "msgs": msg_ptr,
+                                "bases": base_ptr,
+                                "deltas": delta_ptr,
+                            },
+                            "perplexity": ModelFactory.compute_perplexity(
+                                self.data["params"]["judge_model"], text
+                            ),
+                            "text": text,
+                            "msg_rate": msg_rate,
+                            "run_time (ms)": (end - start).microseconds
+                            / len(texts),
+                        }
+                    )
+                l += self.data["params"]["batch_size"]
+
+            postfix = {
+                "base": base,
+                "msg_len": len(msg),
+                "delta": delta,
+            }
+            self.__pbar.refresh()
+            if self.save_freq and (self.__pbar.n + 1) % self.save_freq == 0:
+                self.save_data(self.save_file)
+
+            if self.last_saved is not None:
+                seconds = (datetime.now() - self.last_saved).seconds
+                minutes = seconds // 60
+                hours = minutes // 60
+                minutes %= 60
+                seconds %= 60
+                postfix["last_saved"] = f"{hours}:{minutes}:{seconds} ago"
+
+            self.__pbar.set_postfix(postfix)
+            self.__pbar.update()
+
+    def __get_mean(self, ptrs: dict, value_name: str):
+        s = 0
+        cnt = 0
+        for r in self.data["results"]:
+            msg_type, msg = self.data["params"]["values"]["msgs"][
+                r["ptrs"]["msgs"]
+            ]
+            valid = True
+            for k in ptrs:
+                if (
+                    (k in r["ptrs"] and r["ptrs"][k] != ptrs[k])
+                    or (k == "msg_len" and len(msg) != ptrs[k])
+                    or (k == "msg_type" and msg_type != ptrs[k])
+                ):
+                    valid = False
+                    break
+
+            if valid:
+                s += r[value_name]
+                cnt += 1
+        if cnt == 0:
+            cnt = 1
+        return s / cnt
+
+    def plot(self, figs_dir: str):
+        os.makedirs(figs_dir, exist_ok=True)
+        msg_set = set()
+        for msg_type, msg in self.data["params"]["values"]["msgs"]:
+            msg_set.add((msg_type, len(msg)))
+        msg_set = sorted(msg_set)
+
+        # Delta effect
+        os.makedirs(os.path.join(figs_dir, "delta_effect"), exist_ok=True)
+        for value_name in ["perplexity", "msg_rate"]:
+            fig = plt.figure(dpi=300)
+            for base_ptr, base in enumerate(
+                self.data["params"]["values"]["bases"]
+            ):
+                for msg_type, msg_len in msg_set:
+                    x = []
+                    y = []
+                    for delta_ptr, delta in enumerate(
+                        self.data["params"]["values"]["deltas"]
+                    ):
+                        x.append(delta)
+                        y.append(
+                            self.__get_mean(
+                                ptrs={
+                                    "bases": base_ptr,
+                                    "msg_type": msg_type,
+                                    "msg_len": msg_len,
+                                    "deltas": delta_ptr,
+                                },
+                                value_name=value_name,
+                            )
+                        )
+                    plt.plot(
+                        x,
+                        y,
+                        label=f"B={base}, msg_type={msg_type}, msg_len={msg_len}",
+                    )
+            plt.ylim(ymin=0)
+            plt.legend()
+            plt.savefig(
+                os.path.join(figs_dir, "delta_effect", f"{value_name}.pdf"),
+                bbox_inches="tight",
+            )
+            plt.close(fig)
+
+        # Message length effect
+        os.makedirs(os.path.join(figs_dir, "msg_len_effect"), exist_ok=True)
+        for value_name in ["perplexity", "msg_rate"]:
+            fig = plt.figure(dpi=300)
+            for base_ptr, base in enumerate(
+                self.data["params"]["values"]["bases"]
+            ):
+                for delta_ptr, delta in enumerate(
+                    self.data["params"]["values"]["deltas"]
+                ):
+                    x = {}
+                    y = {}
+                    for msg_type, msg_len in msg_set:
+                        if msg_type not in x:
+                            x[msg_type] = []
+                        if msg_type not in y:
+                            y[msg_type] = []
+                        x[msg_type].append(msg_len)
+                        y[msg_type].append(
+                            self.__get_mean(
+                                ptrs={
+                                    "bases": base_ptr,
+                                    "msg_type": msg_type,
+                                    "msg_len": msg_len,
+                                    "deltas": delta_ptr,
+                                },
+                                value_name=value_name,
+                            )
+                        )
+                    for msg_type in x:
+                        plt.plot(
+                            x[msg_type],
+                            y[msg_type],
+                            label=f"B={base}, msg_type={msg_type}, delta={delta}",
+                        )
+            plt.ylim(ymin=0)
+            plt.legend()
+            plt.savefig(
+                os.path.join(figs_dir, "msg_len_effect", f"{value_name}.pdf"),
+                bbox_inches="tight",
+            )
+            plt.close(fig)
+        print(f"Saved figures to {figs_dir}")
+
+    def save_data(self, file_name: str):
+        if file_name is None:
+            return
+        os.makedirs(os.path.dirname(file_name), exist_ok=True)
+        data = deepcopy(self.data)
+        for i in range(len(data["params"]["values"]["msgs"])):
+            msg_type, msg = data["params"]["values"]["msgs"][i]
+            if msg_type == "random":
+                str_msg = base64.b64encode(msg).decode("ascii")
+            else:
+                str_msg = msg.decode("ascii")
+            data["params"]["values"]["msgs"][i] = [msg_type, str_msg]
+
+        with open(file_name, "w") as f:
+            json.dump(data, f, indent=2)
+        if self.__pbar is None:
+            print(f"Saved AnalyseProcessor data to {file_name}")
+        else:
+            self.last_saved = datetime.now()
+
+    def load_data(self, file_name: str):
+        with open(file_name, "r") as f:
+            self.data = json.load(f)
+        for i in range(len(self.data["params"]["values"]["msgs"])):
+            msg_type, str_msg = self.data["params"]["values"]["msgs"][i]
+            if msg_type == "random":
+                msg = base64.b64decode(str_msg)
+            else:
+                msg = str_msg.encode("ascii")
+            self.data["params"]["values"]["msgs"][i] = [msg_type, msg]
+
+        self.skip_first = len(self.data["results"]) > 0
+        self.__pbar = None
 
 
 def create_args():
@@ -105,7 +396,7 @@ def create_args():
     parser.add_argument(
         "--num-prompts",
         type=int,
-        default=500,
+        default=10,
         help="Number of prompts",
     )
     parser.add_argument(
@@ -129,6 +420,12 @@ def create_args():
         help="Model used to generate",
     )
     parser.add_argument(
+        "--judge-model",
+        type=str,
+        default="gpt2",
+        help="Model used to compute score perplexity of generated text",
+    )
+    parser.add_argument(
         "--deltas",
         nargs=3,
         type=float,
@@ -140,12 +437,23 @@ def create_args():
         type=int,
         help="Bases used in base encoding",
     )
+
+    # Generate parameters
     parser.add_argument(
-        "--judge-model",
-        type=str,
-        default="gpt2",
-        help="Model used to compute score perplexity of generated text",
+        "--do-sample",
+        action="store_true",
+        help="Whether to use sample or greedy search",
     )
+    parser.add_argument(
+        "--num-beams", type=int, default=1, help="How many beams to use"
+    )
+    parser.add_argument(
+        "--batch-size",
+        type=int,
+        default=1,
+        help="Batch size used for generating",
+    )
+
     # Results
     parser.add_argument(
         "--repeat",
@@ -154,19 +462,19 @@ def create_args():
         help="How many times to repeat for each set of parameters, prompts and messages",
     )
     parser.add_argument(
-        "--results-load-file",
+        "--load-file",
         type=str,
         default=None,
-        help="Where to load results",
+        help="Where to load data for AnalyseProcessor",
     )
     parser.add_argument(
-        "--results-save-file",
+        "--save-file",
         type=str,
         default=None,
-        help="Where to save results",
+        help="Where to save data for AnalyseProcessor",
     )
     parser.add_argument(
-        "--results-save-freq", type=int, default=100, help="Save frequency"
+        "--save-freq", type=int, default=100, help="Save frequency"
     )
     parser.add_argument(
         "--figs-dir",
@@ -178,268 +486,10 @@ def create_args():
     return parser.parse_args()
 
 
-def get_results(args, prompts, msgs):
-    model, tokenizer = ModelFactory.load_model(args.gen_model)
-    results = []
-    total_gen = (
-        len(prompts)
-        * int(args.deltas[2])
-        * len(args.bases)
-        * args.repeat
-        * sum([len(msgs[k]) for k in msgs])
-    )
-
-    with tqdm(total=total_gen, desc="Generating") as pbar:
-        for k in msgs:
-            msg_type = k
-            for msg in msgs[k]:
-                msg_bytes = (
-                    msg.encode("ascii")
-                    if k == "readable"
-                    else base64.b64decode(msg)
-                )
-                for base in args.bases:
-                    for delta in np.linspace(
-                        args.deltas[0], args.deltas[1], int(args.deltas[2])
-                    ):
-                        for prompt in prompts:
-                            for _ in range(args.repeat):
-                                text, msg_rate, tokens_info = generate(
-                                    tokenizer=tokenizer,
-                                    model=model,
-                                    prompt=prompt,
-                                    msg=msg_bytes,
-                                    start_pos_p=[0],
-                                    delta=delta,
-                                    msg_base=base,
-                                    seed_scheme="sha_left_hash",
-                                    window_length=1,
-                                    private_key=0,
-                                    min_new_tokens_ratio=1,
-                                    max_new_tokens_ratio=2,
-                                    num_beams=4,
-                                    repetition_penalty=1.5,
-                                    prompt_size=args.prompt_size,
-                                )
-                                results.append(
-                                    {
-                                        "msg_type": msg_type,
-                                        "delta": delta.item(),
-                                        "base": base,
-                                        "perplexity": ModelFactory.compute_perplexity(
-                                            args.judge_model, text
-                                        ),
-                                        "msg_rate": msg_rate,
-                                        "msg_len": len(msg_bytes),
-                                    }
-                                )
-                                pbar.set_postfix(
-                                    {
-                                        "perplexity": results[-1]["perplexity"],
-                                        "msg_rate": results[-1]["msg_rate"],
-                                        "msg_len": len(msg_bytes),
-                                        "delta": delta.item(),
-                                        "base": base,
-                                    }
-                                )
-                                if (
-                                    len(results) + 1
-                                ) % args.results_save_freq == 0:
-                                    if args.results_save_file:
-                                        os.makedirs(
-                                            os.path.dirname(
-                                                args.results_save_file
-                                            ),
-                                            exist_ok=True,
-                                        )
-                                        with open(
-                                            args.results_save_file, "w"
-                                        ) as f:
-                                            json.dump(results, f)
-                                        print(
-                                            f"Saved results to {args.results_save_file}"
-                                        )
-
-                                pbar.update()
-    return results
-
-
-def process_results(results, save_dir):
-    data = {
-        "perplexities": {
-            "random": {},
-            "readable": {},
-        },
-        "msg_rates": {
-            "random": {},
-            "readable": {},
-        },
-    }
-    for r in results:
-        msg_type = r["msg_type"]
-        base = r["base"]
-        delta = r["delta"]
-        msg_rate = r["msg_rate"]
-        msg_len = r["msg_len"]
-        perplexity = r["perplexity"]
-
-        if (base, delta, msg_len) not in data["msg_rates"][msg_type]:
-            data["msg_rates"][msg_type][(base, delta, msg_len)] = []
-        data["msg_rates"][msg_type][(base, delta, msg_len)].append(msg_rate)
-
-        if (base, delta, msg_len) not in data["perplexities"][msg_type]:
-            data["perplexities"][msg_type][(base, delta, msg_len)] = []
-        data["perplexities"][msg_type][(base, delta, msg_len)].append(
-            perplexity
-        )
-
-    bases = {
-        "perplexities": {
-            "random": [],
-            "readable": [],
-        },
-        "msg_rates": {
-            "random": [],
-            "readable": [],
-        },
-    }
-    deltas = {
-        "perplexities": {
-            "random": [],
-            "readable": [],
-        },
-        "msg_rates": {
-            "random": [],
-            "readable": [],
-        },
-    }
-    msgs_lens = {
-        "perplexities": {
-            "random": [],
-            "readable": [],
-        },
-        "msg_rates": {
-            "random": [],
-            "readable": [],
-        },
-    }
-    values = {
-        "perplexities": {
-            "random": [],
-            "readable": [],
-        },
-        "msg_rates": {
-            "random": [],
-            "readable": [],
-        },
-    }
-    base_set = set()
-    delta_set = set()
-    msgs_lens_set = set()
-    for metric in data:
-        for msg_type in data[metric]:
-            for k in data[metric][msg_type]:
-                s = sum(data[metric][msg_type][k])
-                cnt = len(data[metric][msg_type][k])
-                data[metric][msg_type][k] = s / cnt
-
-                bases[metric][msg_type].append(k[0])
-                deltas[metric][msg_type].append(k[1])
-                msgs_lens[metric][msg_type].append(k[2])
-                values[metric][msg_type].append(s / cnt)
-                base_set.add(k[0])
-                delta_set.add(k[1])
-                msgs_lens_set.add(k[2])
-
-    for metric in data:
-        for msg_type in data[metric]:
-            bases[metric][msg_type] = np.array(
-                bases[metric][msg_type], dtype=np.int64
-            )
-            deltas[metric][msg_type] = np.array(
-                deltas[metric][msg_type], dtype=np.int64
-            )
-            msgs_lens[metric][msg_type] = np.array(
-                msgs_lens[metric][msg_type], dtype=np.int64
-            )
-
-            values[metric][msg_type] = np.array(
-                values[metric][msg_type], dtype=np.float64
-            )
-
-    os.makedirs(save_dir, exist_ok=True)
-    for metric in data:
-        for msg_type in data[metric]:
-            fig = plt.figure(dpi=300)
-            s = lambda x: 3.0 + x * (30 if metric == "msg_rates" else 10)
-            plt.scatter(
-                bases[metric][msg_type],
-                deltas[metric][msg_type],
-                s(values[metric][msg_type]),
-            )
-            plt.savefig(
-                os.path.join(save_dir, f"{metric}_{msg_type}_scatter.pdf"),
-                bbox_inches="tight",
-            )
-            plt.close(fig)
-
-    os.makedirs(os.path.join(save_dir, "delta_effect"), exist_ok=True)
-    for metric in data:
-        for msg_type in data[metric]:
-            fig = plt.figure(dpi=300)
-            for base_value in base_set:
-                deltas_avg = np.array(list(sorted(delta_set)))
-                values_avg = np.zeros_like(deltas_avg, dtype=np.float64)
-                for i in range(len(deltas_avg)):
-                    mask = (deltas[metric][msg_type] == deltas_avg[i]) & (
-                        bases[metric][msg_type] == base_value
-                    )
-                    values_avg[i] = np.mean(values[metric][msg_type][mask])
-                plt.plot(deltas_avg, values_avg, label=f"Base {base_value}")
-
-            plt.legend()
-            plt.savefig(
-                os.path.join(
-                    save_dir,
-                    f"delta_effect/{metric}_{msg_type}.pdf",
-                ),
-                bbox_inches="tight",
-            )
-            plt.close(fig)
-
-    os.makedirs(os.path.join(save_dir, "msg_len_effect"), exist_ok=True)
-    for metric in data:
-        for msg_type in data[metric]:
-            fig = plt.figure(dpi=300)
-            for base_value in base_set:
-                msgs_lens_avg = np.array(sorted(list(msgs_lens_set)))
-                values_avg = np.zeros_like(msgs_lens_avg, dtype=np.float64)
-                for i in range(len(msgs_lens_avg)):
-                    mask = (msgs_lens[metric][msg_type] == msgs_lens_avg[i]) & (
-                        bases[metric][msg_type] == base_value
-                    )
-                    values_avg[i] = np.mean(values[metric][msg_type][mask])
-
-                plt.plot(msgs_lens_avg, values_avg, label=f"Base {base_value}")
-
-            plt.legend()
-            plt.savefig(
-                os.path.join(
-                    save_dir,
-                    f"msg_len_effect/{metric}_{msg_type}.pdf",
-                ),
-                bbox_inches="tight",
-            )
-            plt.close(fig)
-
-
 def main(args):
-    if not args.results_load_file:
-        prompts = load_prompts(
-            args.num_prompts,
-            args.prompt_size,
-            args.prompts_file if not args.overwrite else None,
-        )
+    if not args.load_file:
+        model, tokenizer = ModelFactory.load_model(args.gen_model)
+        prompts = load_prompts(tokenizer, args.num_prompts, args.prompt_size)
 
         msgs_lens = []
         for i in np.linspace(
@@ -451,36 +501,44 @@ def main(args):
             for _ in range(args.msgs_per_length):
                 msgs_lens.append(i)
 
-        msgs = load_msgs(
-            msgs_lens,
-            args.msgs_file if not args.overwrite else None,
+        msgs = load_msgs(msgs_lens)
+
+        processor = AnalyseProcessor(
+            save_file=args.save_file,
+            save_freq=args.save_freq,
+            gen_model=args.gen_model,
+            judge_model=args.judge_model,
+            msgs=msgs,
+            bases=args.bases,
+            deltas=np.linspace(
+                args.deltas[0], args.deltas[1], int(args.deltas[2])
+            ).tolist(),
+            prompts=prompts,
+            batch_size=args.batch_size,
+            gen_params=dict(
+                start_pos_p=[0],
+                seed_scheme="dummy_hash",
+                window_length=1,
+                min_new_tokens_ratio=1,
+                max_new_tokens_ratio=1,
+                do_sample=args.do_sample,
+                num_beams=args.num_beams,
+                repetition_penalty=1.0,
+            ),
         )
-
-        if args.msgs_file:
-            if not os.path.isfile(args.msgs_file) or args.overwrite:
-                os.makedirs(os.path.dirname(args.msgs_file), exist_ok=True)
-                with open(args.msgs_file, "w") as f:
-                    json.dump(msgs, f)
-                print(f"Saved messages to {args.msgs_file}")
-        if args.prompts_file:
-            if not os.path.isfile(args.prompts_file) or args.overwrite:
-                os.makedirs(os.path.dirname(args.prompts_file), exist_ok=True)
-                with open(args.prompts_file, "w") as f:
-                    json.dump(prompts, f)
-                print(f"Saved prompts to {args.prompts_file}")
-        results = get_results(args, prompts, msgs)
+        processor.save_data(args.save_file)
     else:
-        with open(args.results_load_file, "r") as f:
-            results = json.load(f)
+        processor = AnalyseProcessor(
+            save_file=args.save_file,
+            save_freq=args.save_freq,
+        )
+        processor.load_data(args.load_file)
 
-    if args.results_save_file:
-        os.makedirs(os.path.dirname(args.results_save_file), exist_ok=True)
-        with open(args.results_save_file, "w") as f:
-            json.dump(results, f)
-        print(f"Saved results to {args.results_save_file}")
+    processor.run()
+    processor.plot(args.figs_dir)
 
-    if args.figs_dir:
-        process_results(results, args.figs_dir)
+    # if args.figs_dir:
+    #     process_results(results, args.figs_dir)
 
 
 if __name__ == "__main__":

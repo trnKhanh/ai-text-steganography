@@ -8,5 +8,7 @@ class DummyHash(SeedScheme):
         pass
 
     def __call__(self, input_ids: torch.Tensor):
+        if input_ids.size(0) == 0:
+            return  0
         return int(input_ids[-1].item())
 

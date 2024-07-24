@@ -12,7 +12,7 @@ with open("resources/examples.json", "r") as f:
 
 
 class EncryptionBody(BaseModel):
-    prompt: str = Field(title="Prompt used to generate text")
+    prompt: str | list[str] = Field(title="Prompt used to generate text")
     msg: str = Field(title="Message wanted to hide")
     gen_model: Literal[tuple(ModelFactory.get_models_names())] = Field(
         default=GlobalConfig.get("encrypt.default", "gen_model"),

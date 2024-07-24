@@ -9,7 +9,7 @@ class GlobalConfig:
 
     @classmethod
     def get_section(cls, section_name):
-        if section_name in cls.config :
+        if section_name in cls.config:
             return cls.config[section_name].keys()
         else:
             return None
@@ -27,6 +27,9 @@ class GlobalConfig:
                 value = float(value)
             elif type_name == "int":
                 value = int(value)
+            elif type_name == "bool":
+                value = bool(value)
+
             return value
         else:
             return None
