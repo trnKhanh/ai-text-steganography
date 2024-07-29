@@ -34,6 +34,10 @@ python api.py
 ```Bash
 python main.py -h
 ```
+- To run analysis, see the help message by:
+```Bash
+python analysis.py -h
+```
 ## Documentation
 - To access the documentation for the RestAPI, launch the RestAPI and go to <http://localhost:6969/docs>
 ## Configuration
@@ -55,8 +59,9 @@ python main.py -h
 - [x] Hashing schemes.
 - [x] Rest API.
 - [x] Basic Demo.
-- [ ] Statistical  experiments.
+- [x] Statistical  experiments.
 - [ ] Attack strategies
     - [ ] White-box
     - [ ] Black-box
+
 

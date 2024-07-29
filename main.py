@@ -62,6 +62,17 @@ def create_args():
         help="Number of beams used in beam search",
     )
     parser.add_argument(
+        "--do-sample",
+        action="store_true",
+        help="Whether to do sample or greedy search",
+    )
+    parser.add_argument(
+        "--min-new-tokens-ratio",
+        type=float,
+        default=GlobalConfig.get("encrypt.default", "min_new_tokens_ratio"),
+        help="Ratio of min new tokens to minimum tokens required to hide message",
+    )
+    parser.add_argument(
         "--max-new-tokens-ratio",
         type=float,
         default=GlobalConfig.get("encrypt.default", "max_new_tokens_ratio"),
@@ -183,6 +194,8 @@ def main(args):
             window_length=args.window_length,
             salt_key=args.salt_key,
             private_key=args.private_key,
+            do_sample=args.do_sample,
+            min_new_tokens_ratio=args.min_new_tokens_ratio,
             max_new_tokens_ratio=args.max_new_tokens_ratio,
             num_beams=args.num_beams,
         )
