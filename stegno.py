@@ -26,19 +26,28 @@ def generate(
     generator: torch.Generator | None = None,
 ):
     """
-    Generate the sequence containing the hidden data.
+    Generate the sequence containing the hidden data. This supports batch input/output.
 
     Args:
         tokenizer: tokenizer to use.
         model: generative model to use.
         prompt: input prompt.
         msg: message to hide in the text.
+        start_pos_p: start position to hide message.
         delta: bias add to scores of token in valid list.
         msg_base: base of the message.
         seed_scheme: scheme used to compute the seed.
         window_length: length of window to compute the seed.
         salt_key: salt to add to the seed.
         private_key: private key used to compute the seed.
+        min_new_tokens_ratio: ratio between min generated tokens and required token length.
+        min_new_tokens_ratio: ratio between max generated tokens and required token length.
+        do_sample: whether to do sampling or greedy generation.
+        num_beams: number of beams used in beam search.
+        repetition_penalty: penalty to avoid repetitiveness.
+        generator: generation used to genereate. This is mainly used to produce deterministic results.
+    Returns:
+        generated texts, hidden message rates, tokens information
     """
     if len(start_pos_p) == 1:
         start_pos = start_pos_p[0]
@@ -134,6 +143,8 @@ def decrypt(
         window_length: length of window to compute the seed.
         salt_key: salt to add to the seed.
         private_key: private key used to compute the seed.
+    Returns:
+        shifted versions of the message
     """
     tokenized_input = tokenizer(text, return_tensors="pt").to(device)
 

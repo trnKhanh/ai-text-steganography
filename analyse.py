@@ -537,9 +537,6 @@ def main(args):
     processor.run()
     processor.plot(args.figs_dir)
 
-    # if args.figs_dir:
-    #     process_results(results, args.figs_dir)
-
 
 if __name__ == "__main__":
     args = create_args()
