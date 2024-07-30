@@ -49,7 +49,7 @@ class EncryptionBody(BaseModel):
         title="Private key used to compute the seed for PRF",
         ge=0,
     )
-    max_new_tokens_ratio: float = Field(
+    min_new_tokens_ratio: float = Field(
         default=GlobalConfig.get("encrypt.default", "min_new_tokens_ratio"),
         title="Min length of generated text compared to the minimum length required to hide the message",
         ge=1,
@@ -63,6 +63,10 @@ class EncryptionBody(BaseModel):
         default=GlobalConfig.get("encrypt.default", "num_beams"),
         title="Number of beams used in beam search",
         ge=1,
+    )
+    do_sample: bool = Field(
+        default=GlobalConfig.get("encrypt.default", "do_sample"),
+        title="Whether to use greedy or sampling generating"
     )
 
     repetition_penalty: float = Field(

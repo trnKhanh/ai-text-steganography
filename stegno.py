@@ -78,18 +78,19 @@ def generate(
         salt_key=salt_key,
         private_key=private_key,
     )
-    min_length = (
+    min_length = int(
         prompt_size
         + start_pos
         + logits_processor.get_message_len() * min_new_tokens_ratio
     )
-    max_length = (
+    max_length = int(
         prompt_size
         + start_pos
         + logits_processor.get_message_len() * max_new_tokens_ratio
     )
     max_length = min(max_length, tokenizer.model_max_length)
     min_length = min(min_length, max_length)
+
     output_tokens = model.generate(
         **tokenized_input,
         logits_processor=transformers.LogitsProcessorList([logits_processor]),
