@@ -45,14 +45,16 @@ async def encrypt_api(
         seed_scheme=body.seed_scheme,
         window_length=body.window_length,
         private_key=body.private_key,
+        min_new_tokens_ratio=body.min_new_tokens_ratio,
         max_new_tokens_ratio=body.max_new_tokens_ratio,
+        do_sample=body.do_sample,
         num_beams=body.num_beams,
         repetition_penalty=body.repetition_penalty,
     )
     return {
         "texts": texts,
         "msgs_rates": msgs_rates,
-        "tokens_info": tokens_infos,
+        "tokens_infos": tokens_infos,
     }
 
 
